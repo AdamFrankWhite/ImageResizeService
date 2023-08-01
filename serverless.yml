@@ -1,0 +1,23 @@
+service: dino-image-server
+frameworkVersion: "3"
+
+provider:
+    name: aws
+    deploymentMethod: direct
+    runtime: nodejs18.x
+    region: eu-west-2
+
+functions:
+    function1:
+        handler: index.handler
+        events:
+            - http:
+                  path: /
+                  method: get
+
+    function2:
+        handler: hello.handler
+        events:
+            - http:
+                  path: /hello
+                  method: get
