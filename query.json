@@ -12,5 +12,5 @@
     },
     "rawPath": "/",
     "routeKey": "/",
-    "body": "{\"operationName\": null, \"variables\": null, \"query\": \"{ hello }\"}"
+    "body": "{\"operationName\": null, \"variables\": null, \"query\": \"{ user(id: \"123\"){email} }\"}"
   }
