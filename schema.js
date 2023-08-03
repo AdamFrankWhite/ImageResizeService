@@ -7,7 +7,14 @@ const {
     GraphQLID,
     GraphQLSchema,
 } = require("graphql");
-
+const AWS = require("aws-sdk");
+var dynamodb = new AWS.DynamoDB();
+const TABLE_NAME = "ResizeServiceTable";
+AWS.config.update({
+    region: process.env.AWS_REGION,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
 const data = require("./sampleData");
 const users = data.users;
 const images = data.images;
@@ -37,6 +44,38 @@ const ImageType = new GraphQLObjectType({
     }),
 });
 
+const getUser = async (id) => {
+    console.log("ID: " + id);
+    const params = {
+        TableName: TABLE_NAME,
+        Key: {
+            USER: {
+                S: id,
+            },
+        },
+    };
+
+    let user = await dynamodb
+        .getItem(params, (err, data) => {
+            if (err) {
+                console.log(err, err.stack); // an error occurred
+            } else {
+                let userObj = {
+                    id: parseInt(id),
+                    username: data.Item.username.S,
+                    email: data.Item.email.S,
+                    password: "bla",
+                    date_created: "meh",
+                    images: [],
+                };
+                console.log(userObj);
+                return userObj;
+            }
+        })
+        .promise();
+    return user;
+};
+// getUser("123");
 const RootQuery = new GraphQLObjectType({
     name: "RootQueryType",
     fields: {
@@ -52,7 +91,11 @@ const RootQuery = new GraphQLObjectType({
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
                 // return dynamoDB item
-                return users.filter((user) => user.id == args.id)[0];
+                let user = getUser(args.id);
+
+                //console.log(users.filter((u) => u.id == args.id)[0]);
+                //return user;
+                return users.filter((u) => u.id == args.id)[0];
             },
         },
         image: {
