@@ -117,7 +117,7 @@ const users = [
         email: "fred@fred.com",
         password: "blblbalba",
         date_created: "2023-06-06",
-        images: [images[0], images[1], images[2]],
+        images: [],
     },
     {
         id: 502,

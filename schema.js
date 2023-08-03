@@ -55,7 +55,8 @@ const getUser = async (id) => {
         },
     };
 
-    let user = await dynamodb
+    let user;
+    await dynamodb
         .getItem(params, (err, data) => {
             if (err) {
                 console.log(err, err.stack); // an error occurred
@@ -68,8 +69,7 @@ const getUser = async (id) => {
                     date_created: "meh",
                     images: [],
                 };
-                console.log(userObj);
-                return userObj;
+                user = userObj;
             }
         })
         .promise();
@@ -91,11 +91,7 @@ const RootQuery = new GraphQLObjectType({
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
                 // return dynamoDB item
-                let user = getUser(args.id);
-
-                //console.log(users.filter((u) => u.id == args.id)[0]);
-                //return user;
-                return users.filter((u) => u.id == args.id)[0];
+                return getUser(args.id);
             },
         },
         image: {
