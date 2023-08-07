@@ -44,6 +44,8 @@ const typeDefs = `#graphql
           compressedPercent: Int
     
       }
+
+      
     
      
 `;
