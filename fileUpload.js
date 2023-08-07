@@ -6,7 +6,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 // create s3 instance using S3Client
 // (this is how we create s3 instance in v3)
-module.exports.handler = async (event) => {
+export const handler = async (event) => {
     const s3 = new S3Client({
         credentials: {
             accessKeyId: process.env.S3_ACCESS_KEY_ID, // store it in .env file to keep it safe
