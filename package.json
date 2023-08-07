@@ -3,21 +3,25 @@
   "version": "1.0.0",
   "description": "<!-- title: 'AWS NodeJS Example' description: 'This template demonstrates how to deploy a NodeJS function running on AWS Lambda using the traditional Serverless Framework.' layout: Doc framework: v3 platform: AWS language: nodeJS priority: 1 authorLink: 'https://github.com/serverless' authorName: 'Serverless, inc.' authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4' -->",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "author": "Adam White",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.382.0",
+    "@aws-sdk/client-dynamodb": "^3.385.0",
     "@aws-sdk/lib-dynamodb": "^3.382.0",
+    "apollo-server-core": "^3.12.0",
+    "apollo-server-express": "^3.12.0",
     "aws-sdk": "^2.1427.0",
     "dynamoose": "^3.2.0",
     "express": "^4.18.2",
-    "express-graphql": "^0.12.0",
-    "graphql": "^15.8.0"
+    "graphql": "^16.3.0",
+    "graphql-http": "^1.21.0",
+    "graphql-upload": "^15.0.1"
   },
   "devDependencies": {
     "dotenv": "^16.3.1",
