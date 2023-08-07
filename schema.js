@@ -6,7 +6,9 @@ const {
     GraphQLBoolean,
     GraphQLID,
     GraphQLSchema,
+    GraphQLSkipDirective,
 } = require("graphql");
+
 const AWS = require("aws-sdk");
 var dynamodb = new AWS.DynamoDB();
 const TABLE_NAME = "ResizeServiceTable";
@@ -26,9 +28,18 @@ const UserType = new GraphQLObjectType({
         email: { type: GraphQLString },
         password: { type: GraphQLString },
         date_created: { type: GraphQLString },
-        images: { type: new GraphQLList(ImageType) },
+        images: { type: new GraphQLList(GraphQLString) },
     }),
 });
+// NEW
+// const FileType = new GraphQLObjectType({
+//     name: "File",
+//     fields: () => ({
+//         filename: { type: GraphQLString },
+//         mimetype: { type: GraphQLString },
+//         encoding: { type: GraphQLString },
+//     }),
+// });
 
 const ImageType = new GraphQLObjectType({
     name: "Image",
@@ -54,20 +65,61 @@ const getUser = async (id) => {
             },
         },
     };
-
+    //async functions caused issue returning data – got it working
     let user;
     await dynamodb
         .getItem(params, (err, data) => {
             if (err) {
                 console.log(err, err.stack); // an error occurred
             } else {
+                console.log(data);
                 let userObj = {
                     id: parseInt(id),
                     username: data.Item.username.S,
                     email: data.Item.email.S,
                     password: "bla",
                     date_created: "meh",
-                    images: [],
+                    images: data.Item.images.L,
+                };
+                let userImages = data.Item.images.L;
+                userObj.images = userImages.map((img) => img.S);
+                user = userObj;
+                console.log(user);
+            }
+        })
+        .promise();
+    return user;
+};
+
+const getImage = async (userID, imageID) => {
+    console.log(`userID: ${userID} + imageID ${id}`);
+    const params = {
+        TableName: TABLE_NAME,
+        Key: {
+            USER: {
+                S: id,
+            },
+        },
+    };
+    //async functions caused issue returning data – got it working
+    let user;
+    await dynamodb
+        .getItem(params, (err, data) => {
+            if (err) {
+                console.log(err, err.stack); // an error occurred
+            } else {
+                let images = data;
+                console.log(images);
+                // let imageObjs = images.map(image => {
+
+                // })
+                let userObj = {
+                    id: parseInt(id),
+                    username: data.Item.username.S,
+                    email: data.Item.email.S,
+                    password: "bla",
+                    date_created: "meh",
+                    images: data.Item.images.S,
                 };
                 user = userObj;
             }
@@ -80,7 +132,7 @@ const RootQuery = new GraphQLObjectType({
     name: "RootQueryType",
     fields: {
         images: {
-            type: new GraphQLList(ImageType),
+            type: new GraphQLList(GraphQLString),
             resolve(parent, args) {
                 // return dynamoDB item
                 return images;
@@ -104,9 +156,69 @@ const RootQuery = new GraphQLObjectType({
         },
     },
 });
+// Mutations
+const mutation = new GraphQLObjectType({
+    name: "Mutation",
+    fields: {
+        addUser: {
+            type: UserType,
+            args: {
+                id: { type: GraphQLID },
+                username: { type: GraphQLString },
+                email: { type: GraphQLString },
+                password: { type: GraphQLString },
+                date_created: { type: GraphQLString },
+                images: { type: new GraphQLList(GraphQLString) },
+            },
+        },
+    },
+    resolve(parent, args) {
+        console.log(args);
+        const user = {
+            id: parseInt(args.id),
+            username: args.username,
+            email: args.email,
+            password: args.password,
+            date_created: args.date_created,
+            images: args.images,
+        };
+        console.log(user);
+        return user;
+    },
+});
 
+// const uploadMutation = new GraphQLObjectType({
+//     name: "UploadMutation",
+//     fields: {
+//         uploadImage: {
+//             type: FileType,
+//             args: {
+//                 id: { type: GraphQLID },
+//                 username: { type: GraphQLString },
+//                 email: { type: GraphQLString },
+//                 password: { type: GraphQLString },
+//                 date_created: { type: GraphQLString },
+//                 images: { type: new GraphQLList(GraphQLString) },
+//             },
+//         },
+//     },
+//     resolve(parent, args) {
+//         console.log(args);
+//         const user = {
+//             id: parseInt(args.id),
+//             username: args.username,
+//             email: args.email,
+//             password: args.password,
+//             date_created: args.date_created,
+//             images: args.images,
+//         };
+//         console.log(user);
+//         return user;
+//     },
+// });
 module.exports = new GraphQLSchema({
     query: RootQuery,
+    mutation,
 });
 // `type Query {
 //     user(id: ID!): User
