@@ -8,30 +8,30 @@ provider:
     region: eu-west-2
 
 functions:
-    graphql:
-        # Make sure your file path is correct!
-        # (e.g., if your file is in the root folder use server.graphqlHandler )
-        # The format is: <FILENAME>.<HANDLER>
-        handler: server.graphqlHandler
-        events:
-            - httpApi:
-                  path: /
-                  method: POST
-            - httpApi:
-                  path: /
-                  method: GET
+    # graphql:
+    #     # Make sure your file path is correct!
+    #     # (e.g., if your file is in the root folder use server.graphqlHandler )
+    #     # The format is: <FILENAME>.<HANDLER>
+    #     handler: index.graphqlHandler
+    #     events:
+    #         - httpApi:
+    #               path: /
+    #               method: POST
+    #         - httpApi:
+    #               path: /
+    #               method: GET
     upload:
         handler: fileUpload.handler
         events:
             - http:
                   path: /upload
                   method: post
-    function1:
-        handler: index.handler
-        events:
-            - http:
-                  path: /
-                  method: get
+    # function1:
+    #     handler: index.handler
+    #     events:
+    #         - http:
+    #               path: /
+    #               method: get
 
     function2:
         handler: hello.handler
