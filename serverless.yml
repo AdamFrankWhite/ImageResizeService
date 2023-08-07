@@ -20,6 +20,12 @@ functions:
             - httpApi:
                   path: /
                   method: GET
+    upload:
+        handler: fileUpload.handler
+        events:
+            - http:
+                  path: /upload
+                  method: post
     function1:
         handler: index.handler
         events:
