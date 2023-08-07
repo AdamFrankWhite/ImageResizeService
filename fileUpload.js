@@ -7,9 +7,6 @@ import * as dotenv from "dotenv";
 
 import awsServerlessExpress from "aws-serverless-express";
 
-exports.handler = (event, context) => {
-    awsServerlessExpress.proxy(server, event, context);
-};
 dotenv.config();
 // create s3 instance using S3Client
 // (this is how we create s3 instance in v3)
