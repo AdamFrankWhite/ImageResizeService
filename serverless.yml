@@ -7,15 +7,15 @@ provider:
             statements:
                 # Allow functions to list all buckets
                 - Effect: Allow
-                Action: "s3:ListBucket"
-                Resource: "*"
+                  Action: "s3:ListBucket"
+                  Resource: "*"
                 # Allow functions to read/write objects in a bucket
                 - Effect: Allow
-                Action:
-                    - "s3:GetObject"
-                    - "s3:PutObject"
-                Resource:
-                    - "arn:aws:s3:::dino-image-library/*"
+                  Action:
+                      - "s3:GetObject"
+                      - "s3:PutObject"
+                  Resource:
+                      - "arn:aws:s3:::dino-image-library/*"
     name: aws
     deploymentMethod: direct
     runtime: nodejs18.x
