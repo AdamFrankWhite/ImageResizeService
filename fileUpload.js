@@ -44,7 +44,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     try {
         await s3.send(command);
         // update dynamodb
-        return res.json({
+        res.json({
             statusCode: 200,
             body: JSON.stringify(
                 {
@@ -57,7 +57,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         });
     } catch (e) {
         if (e) {
-            return res.json({
+            res.json({
                 statusCode: 500,
                 body: JSON.stringify(
                     {
