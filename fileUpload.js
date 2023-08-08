@@ -32,13 +32,14 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 app.post("/upload", upload.single("image"), async (req, res) => {
     // handle upload
-    console.log(req.file);
+    let base64data = new Buffer.from(req.file.buffer, "base64").toString(
+        "base64"
+    );
     const params = {
         Bucket: "dino-image-library",
         Key: req.file.originalname,
-        Body: req.file.buffer,
+        Body: base64data,
         ContentType: req.file.mimetype,
-        ContentEncoding: "base64",
     };
 
     const command = new PutObjectCommand(params);
