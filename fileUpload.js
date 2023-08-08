@@ -31,11 +31,14 @@ const server = awsServerlessExpress.createServer(app);
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 app.post("/upload", upload.single("image"), async (req, res) => {
+    let encodedImage = JSON.parse(req.file.base64Data);
+    let decodedImage = Buffer.from(encodedImage, "base64");
     // handle upload
     const params = {
         Bucket: "dino-image-library",
         Key: req.file.originalname,
-        Body: req.file.buffer,
+        // Body: req.file.buffer,
+        Body: decodedImage,
         ContentType: req.file.mimetype,
     };
 
