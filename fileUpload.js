@@ -40,18 +40,46 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     };
 
     const command = new PutObjectCommand(params);
-    console.log(await s3.send(command));
-    return {
-        statusCode: 200,
-        body: JSON.stringify(
-            {
-                message: "File uploaded successfully!",
-                input: event,
-            },
-            null,
-            2
-        ),
-    };
+    try {
+        await s3.send(command);
+        // update dynamodb
+        res.json({
+            statusCode: 200,
+            body: JSON.stringify(
+                {
+                    message: "File uploaded successfully!",
+                    input: event,
+                },
+                null,
+                2
+            ),
+        });
+    } catch (e) {
+        if (e) {
+            res.json({
+                statusCode: 500,
+                body: JSON.stringify(
+                    {
+                        message: "Error",
+                        input: event,
+                    },
+                    null,
+                    2
+                ),
+            });
+        }
+    }
+    // return {
+    //     statusCode: 200,
+    //     body: JSON.stringify(
+    //         {
+    //             message: "File uploaded successfully!",
+    //             input: event,
+    //         },
+    //         null,
+    //         2
+    //     ),
+    // };
 });
 // };
 export const handler = (event, context) => {
