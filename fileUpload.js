@@ -37,18 +37,19 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         Key: req.file.originalname,
         Body: req.file.buffer,
         ContentType: req.file.mimetype,
+        ContentEncoding: "base64",
     };
 
     const command = new PutObjectCommand(params);
     try {
         await s3.send(command);
         // update dynamodb
-        res.json({
+        return res.json({
             statusCode: 200,
             body: JSON.stringify(
                 {
                     message: "File uploaded successfully!",
-                    input: event,
+                    // input: event,
                 },
                 null,
                 2
@@ -56,12 +57,12 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         });
     } catch (e) {
         if (e) {
-            res.json({
+            return res.json({
                 statusCode: 500,
                 body: JSON.stringify(
                     {
                         message: "Error",
-                        input: event,
+                        // input: event,
                     },
                     null,
                     2
