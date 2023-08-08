@@ -21,8 +21,8 @@ provider:
     runtime: nodejs18.x
     region: eu-west-2
     cors:
-    origins:
-        - "http://localhost:3000"
+        origins:
+            - "http://localhost:3000"
 
 functions:
     # graphql:
