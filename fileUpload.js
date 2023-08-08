@@ -4,7 +4,7 @@ import multer from "multer";
 // import multerS3 from "multer-s3";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import * as dotenv from "dotenv";
-
+import cors from "cors";
 import awsServerlessExpress from "aws-serverless-express";
 
 dotenv.config();
@@ -20,6 +20,7 @@ const s3 = new S3Client({
     region: process.env.AWS_REGION, // this is the region that you select in AWS account
 });
 const app = express();
+app.use(cors());
 const server = awsServerlessExpress.createServer(app);
 // const port = process.env.port || 4000;
 
