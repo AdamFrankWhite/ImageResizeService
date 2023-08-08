@@ -2,10 +2,6 @@ service: dino-image-server
 frameworkVersion: "3"
 
 provider:
-    name: aws
-    deploymentMethod: direct
-    runtime: nodejs18.x
-    region: eu-west-2
     iam:
     role:
         statements:
@@ -20,6 +16,10 @@ provider:
                   - "s3:PutObject"
               Resource:
                   - "arn:aws:s3:::dino-image-library/*"
+    name: aws
+    deploymentMethod: direct
+    runtime: nodejs18.x
+    region: eu-west-2
 
 functions:
     # graphql:
