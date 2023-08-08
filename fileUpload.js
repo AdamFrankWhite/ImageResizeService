@@ -40,7 +40,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     };
 
     const command = new PutObjectCommand(params);
-    await s3.send(command);
+    console.log(await s3.send(command));
     return {
         statusCode: 200,
         body: JSON.stringify(
