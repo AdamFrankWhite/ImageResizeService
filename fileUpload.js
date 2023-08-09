@@ -22,18 +22,17 @@ const s3 = new S3Client({
 const app = express();
 app.use(cors());
 const server = awsServerlessExpress.createServer(app);
-// const port = process.env.port || 4000;
+const port = 4000;
 
-// app.listen(port, () => {
-//     console.log(`Server is running on port ${port}`);
-// });
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
 
 // create memory storage object, storing image in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 app.post("/upload", upload.single("image"), async (req, res) => {
     // handle upload
-    console.log(req.file.buffer);
     const params = {
         Bucket: "dino-image-library",
         Key: req.file.originalname,
@@ -44,6 +43,25 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     try {
         await s3.send(command);
         // update dynamodb
+        //TODO NOW
+        // PUT ITEM WITH S3 URL and file info
+
+        const putCommand = new PutCommand({
+            TableName: "ResizeServiceTable",
+            Item: {
+                // Define your primary key attributes and values here
+                USER: { S: "123" },
+                filename: { S: req.file.originalname },
+                fileType: { S: req.file.mimetype },
+                S3_URI: {
+                    S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+                },
+            },
+        });
+
+        const response = await docClient.send(putCommand);
+        console.log(response);
+
         res.json({
             statusCode: 200,
             body: JSON.stringify(
