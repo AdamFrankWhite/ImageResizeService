@@ -3,8 +3,8 @@ import express from "express";
 import multer from "multer";
 // import multerS3 from "multer-s3";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import AWS from "aws-sdk";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as dotenv from "dotenv";
 import cors from "cors";
@@ -15,12 +15,17 @@ dotenv.config();
 // (this is how we create s3 instance in v3)
 
 // Configure AWS credentials and region
-AWS.config.update({
+const credentials = {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION, // Replace with your desired region
+};
+
+// Create a DynamoDB client instance
+const dynamodbClient = new DynamoDBClient({
+    region: process.env.AWS_REGION,
+    credentials,
 });
-const docClient = new AWS.DynamoDB.DocumentClient();
+
 // export const handler = async (event) => {
 const s3 = new S3Client({
     credentials: {
@@ -59,37 +64,37 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
         // Define the partition key and sort key values
         const partitionKey = "123"; // Replace with actual partition key value
-        const sortKey = "123"; // Replace with actual sort key value
 
         // Define the new image item to add to the list
         const newImageItem = {
-            imageUrl: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
-            filename: req.file.originalname,
-            fileType: req.file.mimetype,
+            imageUrl: {
+                S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+            },
+            filename: { S: req.file.originalname },
+            fileType: { S: req.file.mimetype },
         };
+        // Construct the update command
+        const updateCommand = new UpdateItemCommand({
+            TableName: tableName,
+            Key: { USER: { S: partitionKey } },
+            UpdateExpression: "SET #images = list_append(#images, :newImage)",
+            ExpressionAttributeNames: {
+                "#images": "images",
+            },
+            ExpressionAttributeValues: {
+                ":newImage": { L: [{ M: newImageItem }] },
+            },
+        });
 
         // Update the images list attribute
-        docClient.update(
-            {
-                TableName: tableName,
-                Key: { USER: partitionKey },
-                UpdateExpression:
-                    "SET #images = list_append(#images, :newImage)",
-                ExpressionAttributeNames: {
-                    "#images": "images",
-                },
-                ExpressionAttributeValues: {
-                    ":newImage": [newImageItem],
-                },
-            },
-            (err, data) => {
-                if (err) {
-                    console.error("Error updating item:", err);
-                } else {
-                    console.log("Item updated successfully:", data);
-                }
+        (async () => {
+            try {
+                const result = await dynamodbClient.send(updateCommand);
+                console.log("Item updated successfully:", result);
+            } catch (error) {
+                console.error("Error updating item:", error);
             }
-        );
+        })();
 
         // const putCommand = new PutCommand({
         //     TableName: "ResizeServiceTable",
