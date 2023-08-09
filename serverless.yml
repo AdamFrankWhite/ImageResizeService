@@ -16,6 +16,11 @@ provider:
                       - "s3:PutObject"
                   Resource:
                       - "arn:aws:s3:::dino-image-library/*"
+                - Effect: Allow
+                  Action:
+                      - dynamodb:UpdateItem
+                  Resource:
+                      - "arn:aws:dynamodb:::table/ResizeServiceTable"
     name: aws
     deploymentMethod: direct
     runtime: nodejs18.x
