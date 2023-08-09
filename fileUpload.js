@@ -3,10 +3,13 @@ import express from "express";
 import multer from "multer";
 // import multerS3 from "multer-s3";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as dotenv from "dotenv";
 import cors from "cors";
 import awsServerlessExpress from "aws-serverless-express";
-
+const client = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(client);
 dotenv.config();
 // create s3 instance using S3Client
 // (this is how we create s3 instance in v3)
