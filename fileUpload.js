@@ -3,17 +3,24 @@ import express from "express";
 import multer from "multer";
 // import multerS3 from "multer-s3";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import AWS from "aws-sdk";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { UpdateCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as dotenv from "dotenv";
 import cors from "cors";
 import awsServerlessExpress from "aws-serverless-express";
-const client = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(client);
+const client = new DynamoDBClient({ region: "eu-west-2" });
 dotenv.config();
 // create s3 instance using S3Client
 // (this is how we create s3 instance in v3)
 
+// Configure AWS credentials and region
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION, // Replace with your desired region
+});
+const docClient = new AWS.DynamoDB.DocumentClient();
 // export const handler = async (event) => {
 const s3 = new S3Client({
     credentials: {
@@ -25,11 +32,11 @@ const s3 = new S3Client({
 const app = express();
 app.use(cors());
 const server = awsServerlessExpress.createServer(app);
-// const port = 4000;
+const port = 4000;
 
-// app.listen(port, () => {
-//     console.log(`Server is running on port ${port}`);
-// });
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
 
 // create memory storage object, storing image in memory
 const storage = multer.memoryStorage();
@@ -46,33 +53,70 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     try {
         await s3.send(command);
         // update dynamodb
-        //TODO NOW
-        // PUT ITEM WITH S3 URL and file info
 
-        const updateCommand = new UpdateCommand({
-            TableName: "ResizeServiceTable",
+        // Define the table name
+        const tableName = "ResizeServiceTable";
 
-            Item: {
-                // Define your primary key attributes and values here
-                Key: { USER: "123" },
-                UpdateExpression: "set images = :images",
-                ExpressionAttributeValues: {
-                    ":images": [
-                        {
-                            filename: { S: req.file.originalname },
-                            fileType: { S: req.file.mimetype },
-                            S3_URI: {
-                                S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
-                            },
-                        },
-                    ],
+        // Define the partition key and sort key values
+        const partitionKey = "123"; // Replace with actual partition key value
+        const sortKey = "123"; // Replace with actual sort key value
+
+        // Define the new image item to add to the list
+        const newImageItem = {
+            imageUrl: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+            filename: req.file.originalname,
+            fileType: req.file.mimetype,
+        };
+
+        // Update the images list attribute
+        docClient.update(
+            {
+                TableName: tableName,
+                Key: { USER: partitionKey },
+                UpdateExpression:
+                    "SET #images = list_append(#images, :newImage)",
+                ExpressionAttributeNames: {
+                    "#images": "images",
                 },
-                ReturnValues: "ALL_NEW",
+                ExpressionAttributeValues: {
+                    ":newImage": [newImageItem],
+                },
             },
-        });
+            (err, data) => {
+                if (err) {
+                    console.error("Error updating item:", err);
+                } else {
+                    console.log("Item updated successfully:", data);
+                }
+            }
+        );
 
-        const response = await docClient.send(updateCommand);
-        console.log(response);
+        // const putCommand = new PutCommand({
+        //     TableName: "ResizeServiceTable",
+
+        //     Item: {
+        //         // Define your primary key attributes and values here
+        //         Key: {
+        //             USER: {
+        //                 S: "123",
+        //             },
+        //             images: {
+        //                 L: [
+        //                     {
+        //                         filename: { S: req.file.originalname },
+        //                         fileType: { S: req.file.mimetype },
+        //                         S3_URI: {
+        //                             S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+        //                         },
+        //                     },
+        //                 ],
+        //             },
+        //         },
+        //     },
+        // });
+
+        // const response = await docClient.send(putCommand);
+        // console.log(response);
 
         res.json({
             statusCode: 200,
