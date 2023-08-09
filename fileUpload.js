@@ -4,7 +4,7 @@ import multer from "multer";
 // import multerS3 from "multer-s3";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { UpdateCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as dotenv from "dotenv";
 import cors from "cors";
 import awsServerlessExpress from "aws-serverless-express";
@@ -49,20 +49,29 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         //TODO NOW
         // PUT ITEM WITH S3 URL and file info
 
-        const putCommand = new PutCommand({
+        const updateCommand = new UpdateCommand({
             TableName: "ResizeServiceTable",
+
             Item: {
                 // Define your primary key attributes and values here
-                USER: { S: "123" },
-                filename: { S: req.file.originalname },
-                fileType: { S: req.file.mimetype },
-                S3_URI: {
-                    S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+                Key: { USER: "123" },
+                UpdateExpression: "set images = :images",
+                ExpressionAttributeValues: {
+                    ":images": [
+                        {
+                            filename: { S: req.file.originalname },
+                            fileType: { S: req.file.mimetype },
+                            S3_URI: {
+                                S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+                            },
+                        },
+                    ],
                 },
+                ReturnValues: "ALL_NEW",
             },
         });
 
-        const response = await docClient.send(putCommand);
+        const response = await docClient.send(updateCommand);
         console.log(response);
 
         res.json({
