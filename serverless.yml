@@ -20,7 +20,7 @@ provider:
                   Action:
                       - dynamodb:UpdateItem
                   Resource:
-                      - "arn:aws:dynamodb:::table/ResizeServiceTable"
+                      - "arn:aws:dynamodb:eu-west-2:648268634514:table/ResizeServiceTable"
     name: aws
     deploymentMethod: direct
     runtime: nodejs18.x
