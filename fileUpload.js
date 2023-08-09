@@ -37,11 +37,11 @@ const s3 = new S3Client({
 const app = express();
 app.use(cors());
 const server = awsServerlessExpress.createServer(app);
-const port = process.env.PORT || 4000;
+// const port = 4000;
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
+// app.listen(port, () => {
+//     console.log(`Server is running on port ${port}`);
+// });
 
 // create memory storage object, storing image in memory
 const storage = multer.memoryStorage();
