@@ -23,6 +23,7 @@ const credentials = {
 // Create a DynamoDB client instance
 const dynamodbClient = new DynamoDBClient({
     region: process.env.AWS_REGION,
+    //remove credentials
     // credentials,
 });
 
