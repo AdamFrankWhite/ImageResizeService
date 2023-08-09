@@ -23,7 +23,7 @@ const credentials = {
 // Create a DynamoDB client instance
 const dynamodbClient = new DynamoDBClient({
     region: process.env.AWS_REGION,
-    credentials,
+    // credentials,
 });
 
 // export const handler = async (event) => {
