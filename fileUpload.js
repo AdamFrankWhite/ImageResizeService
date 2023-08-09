@@ -40,7 +40,6 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         Body: req.file.buffer,
         ContentType: req.file.mimetype,
     };
-    console.log("test");
     const command = new PutObjectCommand(params);
     try {
         await s3.send(command);
