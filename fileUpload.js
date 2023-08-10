@@ -59,12 +59,12 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     try {
         await s3.send(command);
         // update dynamodb
-
+        console.log(req.body.user);
         // Define the table name
         const tableName = "ResizeServiceTable";
 
         // Define the partition key and sort key values
-        const partitionKey = "123"; // Replace with actual partition key value
+        const partitionKey = req.body.user; // Replace with actual partition key value
 
         // Define the new image item to add to the list
         const newImageItem = {
