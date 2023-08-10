@@ -88,14 +88,13 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         });
 
         // Update the images list attribute
-        (async () => {
-            try {
-                const result = await dynamodbClient.send(updateCommand);
-                console.log("Item updated successfully:", result);
-            } catch (error) {
-                console.error("Error updating item:", error);
-            }
-        })();
+
+        try {
+            const result = await dynamodbClient.send(updateCommand);
+            console.log("Item updated successfully:", result);
+        } catch (error) {
+            console.error("Error updating item:", error);
+        }
 
         // const putCommand = new PutCommand({
         //     TableName: "ResizeServiceTable",
