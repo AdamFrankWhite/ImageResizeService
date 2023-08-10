@@ -3,6 +3,7 @@ import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
 import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
 // import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+
 const port = process.env.PORT;
 
 const dynamoDBClient = new DynamoDBClient({ region: "eu-west-2" });
@@ -123,3 +124,4 @@ const { url } = await startStandaloneServer(server, {
 });
 
 console.log(`🚀  Server ready at: ${url}`);
+export const graphqlHandler = startServerAndCreateLambdaHandler(server);
