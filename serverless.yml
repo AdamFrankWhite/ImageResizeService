@@ -26,6 +26,9 @@ provider:
     runtime: nodejs18.x
     region: eu-west-2
 
+plugins:
+    - serverless-offline
+
 functions:
     graphql:
         # Make sure your file path is correct!
@@ -45,12 +48,12 @@ functions:
             - http:
                   path: /upload
                   method: post
-    # function1:
-    #     handler: index.handler
-    #     events:
-    #         - http:
-    #               path: /
-    #               method: get
+    resize:
+        handler: resize.handler
+        events:
+            - http:
+                  path: /resize
+                  method: post
 
     function2:
         handler: hello.handler
