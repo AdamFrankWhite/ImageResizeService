@@ -12,11 +12,11 @@ export const handler = async (event, context) => {
         .resize(image.imageWidth, image.imageHeight) // resize
         .quality(90)
         .getBase64Async(Jimp.AUTO);
-    // console.log(Object.values(resizedImage));
+    console.log(resizedImage.bitmap.data);
     return {
         body: JSON.stringify(
             {
-                resizedImage,
+                resizedImage: resizedImage.bitmap.data.toString("base64"),
                 isBase64Encoded: true,
                 input: event,
             },
