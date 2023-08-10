@@ -34,10 +34,10 @@ functions:
         handler: index.graphqlHandler
         events:
             - httpApi:
-                  path: /
+                  path: /graphql
                   method: POST
             - httpApi:
-                  path: /
+                  path: /graphql
                   method: GET
     upload:
         handler: fileUpload.handler
