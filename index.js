@@ -35,7 +35,7 @@ const typeDefs = `#graphql
     
       type Image {
           imageID: String
-          s3URIs: [String]
+          imageUrl: String
           filename: String
           fileType: String
           width: Int
@@ -91,7 +91,7 @@ const resolvers = {
                         images: data.Item.images.L,
                     };
                     let userImages = data.Item.images.L;
-                    userObj.images = userImages.map((img) => img.S);
+                    userObj.images = userImages.map((img) => img.M.filename.S);
                     let user = userObj;
                     console.log(user);
                     return user;
