@@ -30,7 +30,7 @@ const typeDefs = `#graphql
           email: String
           password: String
           date_created: String
-          images: [String]
+          images: [Image]
       }
     
       type Image {
@@ -91,7 +91,13 @@ const resolvers = {
                         images: data.Item.images.L,
                     };
                     let userImages = data.Item.images.L;
-                    userObj.images = userImages.map((img) => img.M.filename.S);
+                    userObj.images = userImages.map((img) => {
+                        return {
+                            filename: img.M.filename.S,
+                            imageUrl: img.M.imageUrl.S,
+                            fileType: img.M.fileType.S,
+                        };
+                    });
                     let user = userObj;
                     console.log(user);
                     return user;
