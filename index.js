@@ -1,4 +1,8 @@
 import { ApolloServer } from "@apollo/server";
+import {
+    startServerAndCreateLambdaHandler,
+    handlers,
+} from "@as-integrations/aws-lambda";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
 import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
@@ -119,9 +123,13 @@ const server = new ApolloServer({
 //  1. creates an Express app
 //  2. installs your ApolloServer instance as middleware
 //  3. prepares your app to handle incoming requests
-const { url } = await startStandaloneServer(server, {
-    listen: { port: 5000 },
-});
+// const { url } = await startStandaloneServer(server, {
+//     listen: { port: 5000 },
+// });
 
-console.log(`🚀  Server ready at: ${url}`);
-export const graphqlHandler = startServerAndCreateLambdaHandler(server);
+// console.log(`🚀  Server ready at: ${url}`);
+export const graphqlHandler = startServerAndCreateLambdaHandler(
+    server,
+    // We will be using the Proxy V2 handler
+    handlers.createAPIGatewayProxyEventV2RequestHandler()
+);
