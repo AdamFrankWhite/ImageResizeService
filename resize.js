@@ -6,22 +6,32 @@ export const handler = async (event, context) => {
     // return/pipe image back to user
     console.log(event.body);
     let image = JSON.parse(event.body);
-    console.log(image.imageWidth, image.imageHeight);
-    let resizedImage = await Jimp.read(image.imagePath);
-    await resizedImage
+    let originalImage = await Jimp.read(image.imagePath);
+    // Convert the resized image to a buffer
+    console.log(
+        "Original image dimensions:",
+        originalImage.getWidth(),
+        originalImage.getHeight()
+    );
+
+    let resizedImage = await originalImage
         .resize(image.imageWidth, image.imageHeight) // resize
-        .quality(90)
-        .getBase64Async(Jimp.AUTO);
-    console.log(resizedImage.bitmap.data);
+        .quality(90);
+    // .getBase64Async(Jimp.AUTO);
+    const resizedBuffer = await resizedImage.getBufferAsync(Jimp.MIME_PNG);
+
+    console.log(
+        "Resized image dimensions:",
+        resizedImage.getWidth(),
+        resizedImage.getHeight()
+    );
+    console.log("Resized buffer length:", resizedBuffer.length);
     return {
-        body: JSON.stringify(
-            {
-                resizedImage: resizedImage.bitmap.data.toString("base64"),
-                isBase64Encoded: true,
-                input: event,
-            },
-            null,
-            2
-        ),
+        status: 200,
+        headers: {
+            "Content-Type": "image/png",
+        },
+        body: JSON.stringify(resizedBuffer.toString("base64")),
+        isBase64Encoded: true,
     };
 };
