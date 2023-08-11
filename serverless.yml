@@ -53,7 +53,7 @@ functions:
         events:
             - http:
                   path: /resize
-                  method: post
+                  method: get
 
     function2:
         handler: hello.handler
