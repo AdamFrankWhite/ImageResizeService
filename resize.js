@@ -4,10 +4,7 @@ export const handler = async (event, context) => {
     // need to get image from s3 bucket
     // resize image
     // return/pipe image back to user
-    console.log(
-        event.queryStringParameters,
-        event.queryStringParameters.imageHeight
-    );
+
     let image = event.queryStringParameters;
     let originalImage = await Jimp.read(image.imagePath);
 
@@ -16,7 +13,10 @@ export const handler = async (event, context) => {
         .quality(90);
     // .getBase64Async(Jimp.AUTO);
     const resizedBuffer = await resizedImage.getBufferAsync(Jimp.MIME_PNG);
-
+    console.log(
+        event.queryStringParameters,
+        event.queryStringParameters.imageHeight
+    );
     return {
         status: 200,
         headers: {
