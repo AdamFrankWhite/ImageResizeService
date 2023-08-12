@@ -4,7 +4,7 @@ export const handler = async (event, context) => {
     // return/pipe image back to user
 
     return {
-        status: 200,
+        statusCode: 200,
 
         body: JSON.stringify({ message: "yo yo!", input: event }),
     };

@@ -15,7 +15,7 @@ export const handler = async (event, context) => {
     const resizedBuffer = await resizedImage.getBufferAsync(Jimp.MIME_PNG);
     console.log(resizedBuffer.toString("base64"));
     return {
-        status: 200,
+        statusCode: 200,
         headers: {
             "Content-Type": "image/png",
         },
