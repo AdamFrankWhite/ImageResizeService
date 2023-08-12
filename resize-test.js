@@ -5,7 +5,7 @@ export const handler = async (event, context) => {
 
     return {
         status: 200,
-        input: event,
-        body: JSON.stringify("yo yo!"),
+
+        body: JSON.stringify({ message: "yo yo!", input: event }),
     };
 };

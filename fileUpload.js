@@ -128,7 +128,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
             body: JSON.stringify(
                 {
                     message: "File uploaded successfully!",
-                    // input: event,
+                    input: event,
                 },
                 null,
                 2
@@ -141,7 +141,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
                 body: JSON.stringify(
                     {
                         message: "Error",
-                        // input: event,
+                        input: event,
                     },
                     null,
                     2
