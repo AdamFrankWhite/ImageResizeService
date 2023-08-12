@@ -54,6 +54,12 @@ functions:
             - http:
                   path: /resize
                   method: get
+    resize-test:
+        handler: resize-test.handler
+        events:
+            - http:
+                  path: /resize-test
+                  method: get
 
     function2:
         handler: hello.handler
