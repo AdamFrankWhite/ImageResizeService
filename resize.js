@@ -19,7 +19,7 @@ export const handler = async (event, context) => {
         headers: {
             "Content-Type": "image/png",
         },
-        body: JSON.stringify(resizedBuffer.toString("base64")),
+        body: JSON.stringify(resizedBuffer.toString("base64"), null, 2),
         isBase64Encoded: true,
     };
 };
