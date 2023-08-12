@@ -13,7 +13,7 @@ export const handler = async (event, context) => {
         .quality(90);
     // .getBase64Async(Jimp.AUTO);
     const resizedBuffer = await resizedImage.getBufferAsync(Jimp.MIME_PNG);
-    console.log(resizedImage);
+    console.log(resizedBuffer);
     return {
         status: 200,
         headers: {
