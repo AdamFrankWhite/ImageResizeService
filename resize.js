@@ -1,6 +1,6 @@
 import Jimp from "jimp";
 
-export const handler = async (event, context) => {
+export const handler = async (event) => {
     // need to get image from s3 bucket
     // resize image
     // return/pipe image back to user
