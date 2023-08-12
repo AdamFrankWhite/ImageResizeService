@@ -5,9 +5,7 @@ export const handler = async (event, context) => {
 
     return {
         status: 200,
-
-        body: JSON.stringify("yo yo!", null, 2),
-
-        isBase64Encoded: true,
+        input: event,
+        body: JSON.stringify("yo yo!"),
     };
 };
