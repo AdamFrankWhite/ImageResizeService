@@ -13,10 +13,11 @@ export const handler = async (event) => {
         statusCode: 200,
         headers: {
             "Content-Type": "image/png",
+            "Content-Encoding": "base64",
         },
         body: resizedBuffer.toString("base64"),
 
-        isBase64Encoded: true,
+        // isBase64Encoded: true,
     };
 
     // return {
