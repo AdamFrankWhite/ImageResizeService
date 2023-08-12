@@ -17,7 +17,7 @@ export const handler = async (event) => {
         },
         body: resizedBuffer.toString("base64"),
 
-        // isBase64Encoded: true,
+        isBase64Encoded: true,
     };
 
     // return {
