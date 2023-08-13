@@ -2,7 +2,11 @@
 import express from "express";
 import multer from "multer";
 // import multerS3 from "multer-s3";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+    S3Client,
+    PutObjectCommand,
+    DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -91,37 +95,12 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
         try {
             const result = await dynamodbClient.send(updateCommand);
+
+            // update graphql mutation
             console.log("Item updated successfully:", result);
         } catch (error) {
             console.error("Error updating item:", error);
         }
-
-        // const putCommand = new PutCommand({
-        //     TableName: "ResizeServiceTable",
-
-        //     Item: {
-        //         // Define your primary key attributes and values here
-        //         Key: {
-        //             USER: {
-        //                 S: "123",
-        //             },
-        //             images: {
-        //                 L: [
-        //                     {
-        //                         filename: { S: req.file.originalname },
-        //                         fileType: { S: req.file.mimetype },
-        //                         S3_URI: {
-        //                             S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
-        //                         },
-        //                     },
-        //                 ],
-        //             },
-        //         },
-        //     },
-        // });
-
-        // const response = await docClient.send(putCommand);
-        // console.log(response);
 
         res.json({
             statusCode: 200,
@@ -145,19 +124,79 @@ app.post("/upload", upload.single("image"), async (req, res) => {
             });
         }
     }
-    // return {
-    //     statusCode: 200,
-    //     body: JSON.stringify(
-    //         {
-    //             message: "File uploaded successfully!",
-    //             input: event,
-    //         },
-    //         null,
-    //         2
-    //     ),
-    // };
 });
-// };
+
+// app.delete("/remove", async (req, res) => {
+//     // handle upload
+//     const params = {
+//         Bucket: "dino-image-library",
+//         Key: req.file.originalname,
+//         Body: req.file.buffer,
+//         ContentType: req.file.mimetype,
+//     };
+//     const command = new DeleteObjectCommand(params);
+//     try {
+//         await s3.send(command);
+//         // update dynamodb
+//         console.log(req.body.user);
+//         // Define the table name
+//         const tableName = "ResizeServiceTable";
+
+//         // Define the partition key and sort key values
+//         const partitionKey = req.body.user; // Replace with actual partition key value
+
+//         // Define the new image item to add to the list
+//         const newImageItem = {
+//             imageUrl: {
+//                 S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+//             },
+//             filename: { S: req.file.originalname },
+//             fileType: { S: req.file.mimetype },
+//         };
+//         // Construct the update command
+//         const updateCommand = new UpdateItemCommand({
+//             TableName: tableName,
+//             Key: { USER: { S: partitionKey } },
+//             UpdateExpression: "SET #images = list_append(#images, :newImage)",
+//             ExpressionAttributeNames: {
+//                 "#images": "images",
+//             },
+//             ExpressionAttributeValues: {
+//                 ":newImage": { L: [{ M: newImageItem }] },
+//             },
+//         });
+
+//         // Update the images list attribute
+
+//         try {
+//             const result = await dynamodbClient.send(updateCommand);
+//             console.log("Item deleted successfully:", result);
+//         } catch (error) {
+//             console.error("Error updating item:", error);
+//         }
+
+//         res.json({
+//             statusCode: 200,
+//             body: JSON.stringify({
+//                 message: "File deleted successfully!",
+//                 // input: event,
+//             }),
+//         });
+//     } catch (e) {
+//         if (e) {
+//             res.json({
+//                 statusCode: 500,
+//                 body: JSON.stringify(
+//                     {
+//                         message: "Error",
+//                     },
+//                     null,
+//                     2
+//                 ),
+//             });
+//         }
+//     }
+// });
 export const handler = (event, context) => {
     awsServerlessExpress.proxy(server, event, context);
 };
