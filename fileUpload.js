@@ -104,10 +104,16 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
         res.json({
             statusCode: 200,
-            body: JSON.stringify({
+            body: {
                 message: "File uploaded successfully!",
-                // input: event,
-            }),
+                imageData: {
+                    imageUrl: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
+
+                    filename: req.file.originalname,
+                    fileType: req.file.mimetype,
+                },
+            },
+            // input: event,
         });
     } catch (e) {
         if (e) {
