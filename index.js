@@ -36,6 +36,8 @@ const typeDefs = `#graphql
           password: String
           date_created: String
           images: [Image]
+          filesUploadCount: Int
+          fileResizeRequestCount: Int
       }
     
       type Image {
@@ -94,6 +96,9 @@ const resolvers = {
                         password: "bla",
                         date_created: "meh",
                         images: data.Item.images.L,
+                        filesUploadCount: data.Item.filesUploadCount.N,
+                        fileResizeRequestCount:
+                            data.Item.fileResizeRequestCount.N,
                     };
                     let userImages = data.Item.images.L;
                     userObj.images = userImages.map((img) => {
