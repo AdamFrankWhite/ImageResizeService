@@ -6,12 +6,11 @@ import {
 import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
 import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
-// import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { GraphQLString } from "graphql";
 
 const port = process.env.PORT;
 
 const dynamoDBClient = new DynamoDBClient({ region: "eu-west-2" });
-// const docClient = DynamoDBDocumentClient.from(client);
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
@@ -36,7 +35,6 @@ const typeDefs = `#graphql
           password: String
           date_created: String
           images: [Image]
-          filesUploadCount: Int
           fileResizeRequestCount: Int
       }
     
@@ -52,43 +50,46 @@ const typeDefs = `#graphql
     
       }
 
+      type Mutation {
+        deleteImage(id: String!, filename: String!): User
+      }
+     
+
       
     
      
 `;
 
+// mutation deleteImage($id: String!, $filename: String!) {
+//     delete(id: $id, filename: $filename) {
+//       images {
+//         filename
+//       }
+//     }
+//   }
 const resolvers = {
     Query: {
         async user(parent, args, contextValue, info) {
             console.log("ID: " + args.id);
 
-            // const command = new GetCommand({
-            //     TableName: "ResizeServiceTable",
-            //     User: {
-            //         N: args.id,
-            //     },
-            // });
-
             const params = {
-                TableName: "ResizeServiceTable", // Replace "YourTableName" with the name of your DynamoDB table
+                TableName: "ResizeServiceTable",
                 Key: {
-                    // Define your primary key attributes and values here
-                    USER: { S: "123" }, // Replace "PartitionKey" and "123" with your actual values
-                    // Optionally, add Sort Key attributes
-                    // SortKey: { S: "some-sort-value" }, // Replace "SortKey" and "some-sort-value" with your actual values
+                    USER: { S: "123" },
+                    // SortKey: { S: "some-sort-value" }
                 },
             };
 
-            // Create a GetItemCommand
+            // create command
             const command = new GetItemCommand(params);
 
-            // Execute the command and handle the response
+            // execute command/handle response
             return dynamoDBClient
                 .send(command)
                 .then((data) => {
                     console.log("Item retrieved:", data.Item);
 
-                    // MAP ITEM TODO
+                    // MAP ITEM TODO - extract out
                     let userObj = {
                         id: parseInt(data.Item.USER.S),
                         username: data.Item.username.S,
@@ -115,6 +116,23 @@ const resolvers = {
                 .catch((error) => {
                     console.error("Error retrieving item:", error);
                 });
+        },
+    },
+    Mutation: {
+        async deleteImage(parent, args, contextValue, info) {
+            let id = args.id;
+            let filename = args.filename;
+            let userObj = {
+                id,
+                username: id,
+                email: "bleh",
+                password: "bla",
+                date_created: "meh",
+                images: [{ filename }],
+                filesUploadCount: 5,
+                fileResizeRequestCount: 5,
+            };
+            return userObj;
         },
     },
 };
