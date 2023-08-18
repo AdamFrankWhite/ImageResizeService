@@ -34,10 +34,10 @@ const dynamodbClient = new DynamoDBClient({
 // export const handler = async (event) => {
 const s3 = new S3Client({
     credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID, // store it in .env file to keep it safe
+        accessKeyId: process.env.S3_ACCESS_KEY_ID,
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
     },
-    region: process.env.AWS_REGION, // this is the region that you select in AWS account
+    region: process.env.AWS_REGION,
 });
 const app = express();
 app.use(cors());
@@ -64,13 +64,10 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         await s3.send(command);
         // update dynamodb
         console.log(req.body.user);
-        // Define the table name
         const tableName = "ResizeServiceTable";
 
-        // Define the partition key and sort key values
-        const partitionKey = req.body.user; // Replace with actual partition key value
+        const partitionKey = req.body.user;
 
-        // Define the new image item to add to the list
         const newImageItem = {
             imageUrl: {
                 S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`,
@@ -78,7 +75,8 @@ app.post("/upload", upload.single("image"), async (req, res) => {
             filename: { S: req.file.originalname },
             fileType: { S: req.file.mimetype },
         };
-        // Construct the update command
+        // update command
+        // update images list attribute
         const updateCommand = new UpdateItemCommand({
             TableName: tableName,
             Key: { USER: { S: partitionKey } },
@@ -91,12 +89,9 @@ app.post("/upload", upload.single("image"), async (req, res) => {
             },
         });
 
-        // Update the images list attribute
-
         try {
             const result = await dynamodbClient.send(updateCommand);
 
-            // update graphql mutation
             console.log("Item updated successfully:", result);
         } catch (error) {
             console.error("Error updating item:", error);
