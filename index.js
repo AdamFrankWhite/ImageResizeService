@@ -5,11 +5,22 @@ import {
 } from "@as-integrations/aws-lambda";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
-import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
+import {
+    DynamoDBClient,
+    UpdateItemCommand,
+    GetItemCommand,
+} from "@aws-sdk/client-dynamodb";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { GraphQLString } from "graphql";
 
 const port = process.env.PORT;
-
+const s3 = new S3Client({
+    credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
+    region: process.env.AWS_REGION,
+});
 const dynamoDBClient = new DynamoDBClient({ region: "eu-west-2" });
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -122,17 +133,84 @@ const resolvers = {
         async deleteImage(parent, args, contextValue, info) {
             let id = args.id;
             let filename = args.filename;
-            let userObj = {
-                id,
-                username: id,
-                email: "bleh",
-                password: "bla",
-                date_created: "meh",
-                images: [{ filename }],
-                filesUploadCount: 5,
-                fileResizeRequestCount: 5,
+            const params = {
+                TableName: "ResizeServiceTable",
+                Key: {
+                    USER: { S: id },
+                    // SortKey: { S: "some-sort-value" }
+                },
             };
-            return userObj;
+
+            //DELETE FROM S3 BUCKET
+            try {
+                const bucketParams = {
+                    Bucket: "dino-image-library",
+                    Key: filename,
+                };
+                const data = await s3.send(
+                    new DeleteObjectCommand(bucketParams)
+                );
+                console.log("Success. Object deleted.", data);
+                return data; // For unit tests.
+            } catch (err) {
+                console.log("Error", err);
+            }
+
+            // DELETE FROM DYNAMODB
+            // create command
+            const command = new GetItemCommand(params);
+
+            // execute command/handle response
+            let filteredArray = await dynamoDBClient
+                .send(command)
+                .then((data) => {
+                    // console.log("Item retrieved:", data.Item);
+
+                    // MAP ITEM TODO - extract out
+                    let imagesArray = data.Item.images.L;
+                    console.log(
+                        imagesArray.filter(
+                            (item) => item.M.filename.S != filename
+                        )
+                    );
+                    return imagesArray.filter(
+                        (item) => item.M.filename.S != filename
+                    );
+                })
+                .catch((error) => {
+                    console.error("Error retrieving item:", error);
+                });
+
+            const updateCommand = new UpdateItemCommand({
+                TableName: "ResizeServiceTable",
+                Key: { USER: { S: id } },
+                UpdateExpression: "SET images = :updatedList",
+
+                ExpressionAttributeValues: {
+                    ":updatedList": { L: filteredArray },
+                },
+            });
+
+            try {
+                const result = await dynamoDBClient.send(updateCommand);
+                // let user = result.user
+                console.log("Item updated successfully:", result);
+                return user;
+            } catch (error) {
+                console.error("Error updating item:", error);
+            }
+
+            // let userObj = {
+            //     id,
+            //     username: id,
+            //     email: "bleh",
+            //     password: "bla",
+            //     date_created: "meh",
+            //     images: [{ filename }],
+            //     filesUploadCount: 5,
+            //     fileResizeRequestCount: 5,
+            // };
+            // return userObj;
         },
     },
 };
