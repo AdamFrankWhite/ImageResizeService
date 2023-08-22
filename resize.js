@@ -3,10 +3,10 @@ import "dotenv/config";
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 export const handler = async (event) => {
     let image = event.queryStringParameters;
-    let originalImage = await Jimp.read(image.imagePath);
+    let originalImage = await Jimp.read(image.p);
     let resizedImage = await originalImage
-        .resize(parseInt(image.imageWidth), parseInt(image.imageHeight)) // resize
-        .quality(90);
+        .resize(parseInt(image.w), parseInt(image.h)) // resize
+        .quality(parseInt(image.q || 90));
     // .getBase64Async(Jimp.AUTO);
     const resizedBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
     // Define the table name

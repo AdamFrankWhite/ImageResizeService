@@ -151,7 +151,7 @@ const resolvers = {
                     new DeleteObjectCommand(bucketParams)
                 );
                 console.log("Success. Object deleted.", data);
-                return data; // For unit tests.
+                // return data; // For unit tests.
             } catch (err) {
                 console.log("Error", err);
             }
@@ -168,11 +168,7 @@ const resolvers = {
 
                     // MAP ITEM TODO - extract out
                     let imagesArray = data.Item.images.L;
-                    console.log(
-                        imagesArray.filter(
-                            (item) => item.M.filename.S != filename
-                        )
-                    );
+
                     return imagesArray.filter(
                         (item) => item.M.filename.S != filename
                     );
@@ -193,9 +189,9 @@ const resolvers = {
 
             try {
                 const result = await dynamoDBClient.send(updateCommand);
-                // let user = result.user
+
                 console.log("Item updated successfully:", result);
-                return user;
+                return filteredArray;
             } catch (error) {
                 console.error("Error updating item:", error);
             }
