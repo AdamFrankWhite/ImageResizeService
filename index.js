@@ -5,7 +5,7 @@ import {
 } from "@as-integrations/aws-lambda";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
-import bcrypt from "bcryptjs";
+// import bcrypt from "bcryptjs";
 import {
     DynamoDBClient,
     UpdateItemCommand,
@@ -219,36 +219,35 @@ const resolvers = {
             let password = args.password;
             // hash password
 
-            bcrypt.hash(password, 10, function (err, hash) {
-                // save to dynamoDb
-                const item = {
-                    TableName: "ResizeServiceTable",
-                    Item: {
-                        // Specify the attributes of the item
-                        USER: { S: username },
-                        password: { S: hash },
-                        images: { L: [] },
-                    },
-                };
-                console.log("hashing...");
-                const putItemCommand = new PutItemCommand(item);
-                // separate function for async/await
-                async function putItem() {
-                    try {
-                        const response = await dynamoDBClient.send(
-                            putItemCommand
-                        );
-                        console.log("Item added:", response);
-                    } catch (error) {
-                        console.error("Error adding item:", error);
-                    }
+            // await bcrypt.hash(password, 10, function (err, hash) {
+            // save to dynamoDb
+            const item = {
+                TableName: "ResizeServiceTable",
+                Item: {
+                    // Specify the attributes of the item
+                    USER: { S: username },
+                    // password: { S: hash },
+                    password: { S: password },
+                    images: { L: [] },
+                },
+            };
+            console.log("hashing...");
+            const putItemCommand = new PutItemCommand(item);
+            // separate function for async/await
+            async function putItem() {
+                try {
+                    const response = await dynamoDBClient.send(putItemCommand);
+                    console.log("Item added:", response);
+                } catch (error) {
+                    console.error("Error adding item:", error);
                 }
+            }
 
-                // Call the putItem function
-                putItem();
-                // return user
-                // res.json(insertResult);
-            });
+            // Call the putItem function
+            putItem();
+            // return user
+            // res.json(insertResult);
+            // });
         },
     },
 };
