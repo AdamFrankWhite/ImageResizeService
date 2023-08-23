@@ -221,13 +221,14 @@ const resolvers = {
 
             await bcrypt.hash(password, 10, function (err, hash) {
                 // save to dynamoDb
+                console.log(hash);
                 const item = {
                     TableName: "ResizeServiceTable",
                     Item: {
                         // Specify the attributes of the item
                         USER: { S: username },
                         // password: { S: hash },
-                        password: { S: password },
+                        password: { S: hash },
                         images: { L: [] },
                     },
                 };
