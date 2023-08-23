@@ -217,10 +217,9 @@ const resolvers = {
         async createUser(parent, args, contextValue, info) {
             let username = args.username;
             let password = args.password;
-            console.log("user added: " + username);
             // hash password
 
-            await bcrypt.hash(password, 10, function (err, hash) {
+            bcrypt.hash(password, 10, function (err, hash) {
                 // save to dynamoDb
                 const item = {
                     TableName: "ResizeServiceTable",
