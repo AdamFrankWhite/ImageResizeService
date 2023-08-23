@@ -5,10 +5,12 @@ import {
 } from "@as-integrations/aws-lambda";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
+import bcrypt from "bcrypt";
 import {
     DynamoDBClient,
     UpdateItemCommand,
     GetItemCommand,
+    PutItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { GraphQLString } from "graphql";
@@ -216,7 +218,37 @@ const resolvers = {
             let username = args.username;
             let password = args.password;
             console.log("user added: " + username);
-            //
+            // hash password
+
+            await bcrypt.hash(password, 10, function (err, hash) {
+                // save to dynamoDb
+                const item = {
+                    TableName: "ResizeServiceTable",
+                    Item: {
+                        // Specify the attributes of the item
+                        USER: { S: username },
+                        password: { S: hash },
+                    },
+                };
+
+                const putItemCommand = new PutItemCommand(item);
+                // separate function for async/await
+                async function putItem() {
+                    try {
+                        const response = await dynamoDBClient.send(
+                            putItemCommand
+                        );
+                        console.log("Item added:", response);
+                    } catch (error) {
+                        console.error("Error adding item:", error);
+                    }
+                }
+
+                // Call the putItem function
+                putItem();
+                // return user
+                // res.json(insertResult);
+            });
         },
     },
 };
