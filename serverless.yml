@@ -21,7 +21,7 @@ provider:
                       - dynamodb:UpdateItem
                       - dynamodb:PutItem
                       - dynamodb:DeleteItem
-				      - dynamodb:GetItem
+                      - dynamodb:GetItem
                   Resource:
                       - "arn:aws:dynamodb:eu-west-2:648268634514:table/ResizeServiceTable"
 
