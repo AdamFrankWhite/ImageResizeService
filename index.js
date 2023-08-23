@@ -62,6 +62,7 @@ const typeDefs = `#graphql
     
       }
 
+      
       type Mutation {
         deleteImage(id: String!, filename: String!): User
       }
@@ -70,6 +71,10 @@ const typeDefs = `#graphql
         createUser(username: String!, password: String!): User
       }
      
+      type Mutation {
+        login(username: String!, password: String!): User
+        
+      }
 
       
     
@@ -231,6 +236,7 @@ const resolvers = {
                     // Specify the attributes of the item
                     USER: { S: username },
                     password: { S: hash },
+                    salt: { S: salt },
                     images: { L: [] },
                     fileResizeRequestCount: { N: "0" },
                     filesUploadCount: { N: "0" },
@@ -243,6 +249,48 @@ const resolvers = {
                 console.log("Item added:", response);
             } catch (error) {
                 console.error("Error adding item:", error);
+            }
+        },
+        async login(parent, args, contextValue, info) {
+            let username = args.username;
+            let password = args.password;
+
+            const params = {
+                TableName: "ResizeServiceTable",
+                Key: {
+                    USER: { S: username },
+                },
+            };
+
+            // create command
+            const command = new GetItemCommand(params);
+
+            // execute command/handle response
+            let validPassword = await dynamoDBClient
+                .send(command)
+                .then((data) => {
+                    console.log("Item retrieved:", data.Item);
+
+                    // MAP ITEM TODO - extract out
+                    let storedPassword = data.Item.password.S;
+                    let salt = data.Item.salt.S;
+                    // hash password
+                    var hashedPassword = crypto
+                        .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
+                        .toString(`hex`);
+
+                    // Check stored password
+                    console.log(hashedPassword);
+                    console.log(storedPassword);
+                    console.log(hashedPassword == storedPassword);
+                })
+                .catch((error) => {
+                    console.error("Error retrieving item:", error);
+                });
+            if (validPassword) {
+                return "valid";
+            } else {
+                return "wrong password";
             }
         },
     },
