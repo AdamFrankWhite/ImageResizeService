@@ -21,6 +21,12 @@ provider:
                       - dynamodb:UpdateItem
                   Resource:
                       - "arn:aws:dynamodb:eu-west-2:648268634514:table/ResizeServiceTable"
+
+                - Effect: Allow
+                  Action:
+                      - lambda:InvokeFunction
+                  Resource:
+                      - arn:aws:lambda:eu-west-2:*:*
     name: aws
     deploymentMethod: direct
     runtime: nodejs18.x
