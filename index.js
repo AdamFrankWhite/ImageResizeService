@@ -230,7 +230,7 @@ const resolvers = {
                         images: { L: [] },
                     },
                 };
-
+                console.log("hashing...");
                 const putItemCommand = new PutItemCommand(item);
                 // separate function for async/await
                 async function putItem() {
