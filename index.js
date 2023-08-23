@@ -244,7 +244,7 @@ const resolvers = {
             }
 
             // Call the putItem function
-            putItem();
+            await putItem();
             // return user
             // res.json(insertResult);
             // });
