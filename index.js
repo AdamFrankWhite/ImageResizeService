@@ -228,6 +228,7 @@ const resolvers = {
                         // Specify the attributes of the item
                         USER: { S: username },
                         password: { S: hash },
+                        images: { L: [] },
                     },
                 };
 
