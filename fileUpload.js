@@ -77,6 +77,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
             fileType: { S: req.file.mimetype },
         };
         // update command
+        console.log("bla");
         // update images list attribute
         const updateCommand = new UpdateItemCommand({
             TableName: tableName,
