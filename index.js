@@ -230,6 +230,8 @@ const resolvers = {
                         // password: { S: hash },
                         password: { S: hash },
                         images: { L: [] },
+                        fileResizeRequestCount: { N: "0" },
+                        filesUploadCount: { N: "0" },
                     },
                 };
                 console.log("hashing...");
