@@ -64,6 +64,10 @@ const typeDefs = `#graphql
       type Mutation {
         deleteImage(id: String!, filename: String!): User
       }
+
+      type Mutation {
+        createUser(username: String!, password: String!): User
+      }
      
 
       
@@ -207,6 +211,12 @@ const resolvers = {
             //     fileResizeRequestCount: 5,
             // };
             // return userObj;
+        },
+        async createUser(parent, args, contextValue, info) {
+            let username = args.username;
+            let password = args.password;
+            console.log("user added: " + username);
+            //
         },
     },
 };
