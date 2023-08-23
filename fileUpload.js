@@ -59,7 +59,6 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         Key: req.file.originalname,
         Body: req.file.buffer,
         ContentType: req.file.mimetype,
-        ContentEncoding: "base64",
     };
     const command = new PutObjectCommand(params);
     try {
