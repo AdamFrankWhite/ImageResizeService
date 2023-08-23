@@ -5,7 +5,7 @@ import {
 } from "@as-integrations/aws-lambda";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import {
     DynamoDBClient,
     UpdateItemCommand,
