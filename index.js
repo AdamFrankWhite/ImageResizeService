@@ -264,7 +264,7 @@ const resolvers = {
 
             // create command
             const command = new GetItemCommand(params);
-
+            let user = {};
             // execute command/handle response
             let validPassword = await dynamoDBClient
                 .send(command)
@@ -278,20 +278,31 @@ const resolvers = {
                     var hashedPassword = crypto
                         .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
                         .toString(`hex`);
-
+                    let userObj = {
+                        id: data.Item.USER.S,
+                        // username: data.Item.username.S,
+                        // email: data.Item.email.S,
+                        // password: "bla",
+                        date_created: "meh",
+                        images: data.Item.images.L,
+                        filesUploadCount: data.Item.filesUploadCount.N,
+                        fileResizeRequestCount:
+                            data.Item.fileResizeRequestCount.N,
+                    };
                     // Check stored password
-                    console.log(hashedPassword);
-                    console.log(storedPassword);
                     console.log(hashedPassword == storedPassword);
+                    if (hashedPassword == storedPassword) {
+                        user = userObj;
+                        console.log(user.id);
+                    } else {
+                        return "wrong password";
+                    }
+                    console.log(user);
                 })
                 .catch((error) => {
                     console.error("Error retrieving item:", error);
                 });
-            if (validPassword) {
-                return "valid";
-            } else {
-                return "wrong password";
-            }
+            return user;
         },
     },
 };
