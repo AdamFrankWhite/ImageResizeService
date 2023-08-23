@@ -6,7 +6,7 @@ export const handler = async (event) => {
     let originalImage = await Jimp.read(image.p);
     let resizedImage = await originalImage
         .resize(parseInt(image.w), parseInt(image.h)) // resize
-        .quality(parseInt(image.q || 90));
+        .quality(parseInt(image.q) || 90);
     // .getBase64Async(Jimp.AUTO);
     const resizedBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
     // Define the table name
