@@ -96,7 +96,7 @@ const resolvers = {
             const params = {
                 TableName: "ResizeServiceTable",
                 Key: {
-                    USER: { S: "123" },
+                    USER: { S: args.id },
                     // SortKey: { S: "some-sort-value" }
                 },
             };
@@ -284,7 +284,13 @@ const resolvers = {
                         // email: data.Item.email.S,
                         // password: "bla",
                         date_created: "meh",
-                        images: data.Item.images.L,
+                        images: data.Item.images.L.map((item) => {
+                            return {
+                                fileType: item.M.fileType.S,
+                                imageUrl: item.M.imageUrl.S,
+                                filename: item.M.filename.S,
+                            };
+                        }),
                         filesUploadCount: data.Item.filesUploadCount.N,
                         fileResizeRequestCount:
                             data.Item.fileResizeRequestCount.N,
