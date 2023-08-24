@@ -279,7 +279,7 @@ const resolvers = {
                         .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
                         .toString(`hex`);
                     let userObj = {
-                        id: data.Item.USER.S,
+                        username: data.Item.USER.S,
                         // username: data.Item.username.S,
                         // email: data.Item.email.S,
                         // password: "bla",
@@ -300,6 +300,7 @@ const resolvers = {
                     if (hashedPassword == storedPassword) {
                         user = userObj;
                         console.log(user.id);
+                        return user;
                     } else {
                         return "wrong password";
                     }
