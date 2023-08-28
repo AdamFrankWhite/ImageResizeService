@@ -300,7 +300,6 @@ const resolvers = {
                     if (hashedPassword == storedPassword) {
                         user = userObj;
                         console.log(user.id);
-                        return user;
                     } else {
                         return "wrong password";
                     }
