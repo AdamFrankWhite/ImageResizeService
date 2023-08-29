@@ -81,6 +81,22 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         };
         const command_m = new PutObjectCommand(params_med);
         await s3.send(command_m);
+
+        // read image
+        let resizedImageS = await originalImage.resize(
+            parseInt(originalImage.bitmap.width / 5),
+            parseInt(originalImage.bitmap.height / 5)
+        ); // resize
+
+        const resizedBufferS = await resizedImageS.getBufferAsync(Jimp.AUTO);
+        const params_s = {
+            Bucket: "dino-image-library",
+            Key: req.file.originalname.replace(".", "_s."),
+            Body: resizedBuffer,
+            ContentType: req.file.mimetype,
+        };
+        const command_s = new PutObjectCommand(params_s);
+        await s3.send(command_s);
         // update dynamodb
         console.log(req.body.user);
         const tableName = "ResizeServiceTable";
