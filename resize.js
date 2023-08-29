@@ -2,11 +2,19 @@ import Jimp from "jimp";
 import "dotenv/config";
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 export const handler = async (event) => {
-    let image = event.queryStringParameters;
-    let originalImage = await Jimp.read(image.p);
+    let params = event.queryStringParameters;
+    let filename = params.f;
+    let width = params.w;
+    let height = params.h;
+    let quality = params.q;
+
+    // set appropriate image size file
+    let imageToRead = `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`;
+    // read iamge
+    let originalImage = await Jimp.read(imageToRead);
     let resizedImage = await originalImage
-        .resize(parseInt(image.w), parseInt(image.h)) // resize
-        .quality(parseInt(image.q) || 90);
+        .resize(parseInt(width), parseInt(height)) // resize
+        .quality(parseInt(quality) || 90);
     // .getBase64Async(Jimp.AUTO);
     const resizedBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
     // Define the table name
@@ -19,6 +27,7 @@ export const handler = async (event) => {
         region: process.env.AWS_REGION,
     });
 
+    // TODO - add dynamic username, however don't really wanna pass through query strings
     // Construct the update command
     const updateCommand = new UpdateItemCommand({
         TableName: tableName,
