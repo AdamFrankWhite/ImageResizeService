@@ -75,7 +75,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         const resizedBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
         const params_med = {
             Bucket: "dino-image-library",
-            Key: req.file.originalname + "_m",
+            Key: req.file.originalname.replace(".", "_m."),
             Body: resizedBuffer,
             ContentType: req.file.mimetype,
         };
