@@ -4,16 +4,48 @@ import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 export const handler = async (event) => {
     let params = event.queryStringParameters;
     let filename = params.f;
-    let width = params.w;
-    let height = params.h;
+    // requested dimensions
+    let requestedWidth = params.w;
+    let requestedHeight = params.h;
     let quality = params.q;
 
-    // set appropriate image size file
-    let imageToRead = `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`;
-    // read iamge
+    // measure small image first
+    let imageToRead = `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename.replace(
+        ".",
+        "_s."
+    )}`;
     let originalImage = await Jimp.read(imageToRead);
+    // read image width
+    let smallImageWidth = originalImage.bitmap.width;
+    let smallImageHeight = originalImage.bitmap.height;
+    // calculate s3 image version to resize
+    console.log(smallImageWidth, smallImageHeight);
+
+    if (
+        requestedWidth > smallImageWidth * 5 ||
+        requestedHeight > smallImageHeight * 5
+    ) {
+        console.log("large image processed");
+        originalImage = await Jimp.read(
+            `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`
+        );
+    } else if (
+        requestedWidth > smallImageWidth * 2 ||
+        requestedHeight > smallImageHeight * 2
+    ) {
+        console.log("medium image processed");
+        originalImage = await Jimp.read(
+            `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename.replace(
+                ".",
+                "_m."
+            )}`
+        );
+    } else {
+        console.log("small image processed");
+    }
+
     let resizedImage = await originalImage
-        .resize(parseInt(width), parseInt(height)) // resize
+        .resize(parseInt(requestedWidth), parseInt(requestedHeight)) // resize
         .quality(parseInt(quality) || 90);
     // .getBase64Async(Jimp.AUTO);
     const resizedBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
