@@ -1,7 +1,7 @@
 "use strict";
 import express from "express";
 import multer from "multer";
-// import multerS3 from "multer-s3";
+import Jimp from "jimp";
 import {
     S3Client,
     PutObjectCommand,
@@ -63,6 +63,24 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     const command = new PutObjectCommand(params);
     try {
         await s3.send(command);
+        console.log(req.filename.originalname);
+        let imageToRead = `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.filename.originalname}`;
+        // read image
+        let originalImage = await Jimp.read(imageToRead);
+        let resizedImage = await originalImage.resize(
+            parseInt(originalImage.bitmap.width / 2),
+            parseInt(originalImage.bitmap.height / 2)
+        ); // resize
+
+        const resizedBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
+        const params_med = {
+            Bucket: "dino-image-library",
+            Key: req.file.originalname + "_m",
+            Body: resizedBuffer,
+            ContentType: req.file.mimetype,
+        };
+        const command_m = new PutObjectCommand(params_med);
+        await s3.send(command_m);
         // update dynamodb
         console.log(req.body.user);
         const tableName = "ResizeServiceTable";
