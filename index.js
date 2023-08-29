@@ -6,6 +6,7 @@ import {
 import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import {
     DynamoDBClient,
     UpdateItemCommand,
@@ -13,7 +14,6 @@ import {
     PutItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
-
 const port = process.env.PORT;
 const s3 = new S3Client({
     credentials: {
@@ -37,7 +37,7 @@ const typeDefs = `#graphql
   # case, the "books" query returns an array of zero or more Books (defined above).
   
     type Query {
-        user(id: String!): User
+        user(id: String!, token: String): User
       }
     
       type User {
@@ -48,6 +48,7 @@ const typeDefs = `#graphql
           date_created: String
           images: [Image]
           fileResizeRequestCount: Int
+          token: String
       }
     
       type Image {
@@ -92,7 +93,22 @@ const resolvers = {
     Query: {
         async user(parent, args, contextValue, info) {
             console.log("ID: " + args.id);
-
+            let token = args.token;
+            let secretKey = process.env.JWT_SECRET_KEY;
+            // verify token
+            let loginVerified = false;
+            jwt.verify(token, secretKey, (error, decoded) => {
+                if (error) {
+                    console.log("Login failed");
+                    return error.message;
+                    console.error("Token verification failed:", error.message);
+                } else {
+                    loginVerified = true;
+                }
+            });
+            if (!loginVerified) {
+                return "Authentication failed";
+            }
             const params = {
                 TableName: "ResizeServiceTable",
                 Key: {
@@ -112,9 +128,9 @@ const resolvers = {
 
                     // MAP ITEM TODO - extract out
                     let userObj = {
-                        id: parseInt(data.Item.USER.S),
-                        username: data.Item.username.S,
-                        email: data.Item.email.S,
+                        // id: data.Item.USER.S,
+                        username: data.Item.USER.S,
+                        // email: data.Item.email.S,
                         password: "bla",
                         date_created: "meh",
                         images: data.Item.images.L,
@@ -299,7 +315,14 @@ const resolvers = {
                     console.log(hashedPassword == storedPassword);
                     if (hashedPassword == storedPassword) {
                         user = userObj;
-                        console.log(user.id);
+                        // generate session key
+                        let secretKey = process.env.JWT_SECRET_KEY;
+                        const options = {
+                            expiresIn: "3h", // Token expiration time
+                        };
+
+                        const token = jwt.sign(user, secretKey, options);
+                        user.token = token;
                     } else {
                         return "wrong password";
                     }
