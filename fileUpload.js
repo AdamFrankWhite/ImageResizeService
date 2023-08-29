@@ -92,7 +92,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         const params_s = {
             Bucket: "dino-image-library",
             Key: req.file.originalname.replace(".", "_s."),
-            Body: resizedBuffer,
+            Body: resizedBufferS,
             ContentType: req.file.mimetype,
         };
         const command_s = new PutObjectCommand(params_s);
