@@ -63,8 +63,8 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     const command = new PutObjectCommand(params);
     try {
         await s3.send(command);
-        console.log(req.filename.originalname);
-        let imageToRead = `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.filename.originalname}`;
+        console.log(req.file.originalname);
+        let imageToRead = `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`;
         // read image
         let originalImage = await Jimp.read(imageToRead);
         let resizedImage = await originalImage.resize(
