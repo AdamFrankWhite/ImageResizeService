@@ -43,7 +43,7 @@ functions:
         # Make sure your file path is correct!
         # (e.g., if your file is in the root folder use server.graphqlHandler )
         # The format is: <FILENAME>.<HANDLER>
-        handler: index.graphqlHandler
+        handler: graphql.graphqlHandler
         events:
             - httpApi:
                   path: /graphql
@@ -62,17 +62,4 @@ functions:
         events:
             - http:
                   path: /resize
-                  method: get
-    # resize-test:
-    #     handler: resize-test.handler
-    #     events:
-    #         - http:
-    #               path: /resize-test
-    #               method: get
-
-    function2:
-        handler: hello.handler
-        events:
-            - http:
-                  path: /hello
                   method: get

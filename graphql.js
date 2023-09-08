@@ -3,7 +3,6 @@ import {
     startServerAndCreateLambdaHandler,
     handlers,
 } from "@as-integrations/aws-lambda";
-import { startStandaloneServer } from "@apollo/server/standalone";
 import "dotenv/config";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -14,7 +13,6 @@ import {
     PutItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
-const port = process.env.PORT;
 const s3 = new S3Client({
     credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY_ID,
@@ -82,17 +80,10 @@ const typeDefs = `#graphql
      
 `;
 
-// mutation deleteImage($id: String!, $filename: String!) {
-//     delete(id: $id, filename: $filename) {
-//       images {
-//         filename
-//       }
-//     }
-//   }
+// RESOLVERS
 const resolvers = {
     Query: {
         async user(parent, args, contextValue, info) {
-            console.log("ID: " + args.id);
             let token = args.token;
             let secretKey = process.env.JWT_SECRET_KEY;
             // verify token
@@ -101,7 +92,6 @@ const resolvers = {
                 if (error) {
                     console.log("Login failed");
                     return error.message;
-                    console.error("Token verification failed:", error.message);
                 } else {
                     loginVerified = true;
                 }
@@ -113,7 +103,6 @@ const resolvers = {
                 TableName: "ResizeServiceTable",
                 Key: {
                     USER: { S: args.id },
-                    // SortKey: { S: "some-sort-value" }
                 },
             };
 
@@ -128,9 +117,7 @@ const resolvers = {
 
                     // MAP ITEM TODO - extract out
                     let userObj = {
-                        // id: data.Item.USER.S,
                         username: data.Item.USER.S,
-                        // email: data.Item.email.S,
                         password: "bla",
                         date_created: "meh",
                         images: data.Item.images.L,
@@ -163,7 +150,6 @@ const resolvers = {
                 TableName: "ResizeServiceTable",
                 Key: {
                     USER: { S: id },
-                    // SortKey: { S: "some-sort-value" }
                 },
             };
 
@@ -221,18 +207,6 @@ const resolvers = {
             } catch (error) {
                 console.error("Error updating item:", error);
             }
-
-            // let userObj = {
-            //     id,
-            //     username: id,
-            //     email: "bleh",
-            //     password: "bla",
-            //     date_created: "meh",
-            //     images: [{ filename }],
-            //     filesUploadCount: 5,
-            //     fileResizeRequestCount: 5,
-            // };
-            // return userObj;
         },
         async createUser(parent, args, contextValue, info) {
             let username = args.username;
@@ -258,7 +232,6 @@ const resolvers = {
                     filesUploadCount: { N: "0" },
                 },
             };
-            console.log("hashing...");
             const putItemCommand = new PutItemCommand(item);
             try {
                 const response = await dynamoDBClient.send(putItemCommand);
@@ -341,15 +314,6 @@ const server = new ApolloServer({
     resolvers,
 });
 
-// Passing an ApolloServer instance to the `startStandaloneServer` function:
-//  1. creates an Express app
-//  2. installs your ApolloServer instance as middleware
-//  3. prepares your app to handle incoming requests
-// const { url } = await startStandaloneServer(server, {
-//     listen: { port: 5000 },
-// });
-
-// console.log(`🚀  Server ready at: ${url}`);
 export const graphqlHandler = startServerAndCreateLambdaHandler(
     server,
     // We will be using the Proxy V2 handler
