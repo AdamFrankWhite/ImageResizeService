@@ -160,10 +160,18 @@ const resolvers = {
                     Bucket: "dino-image-library",
                     Key: filename,
                 };
-                const data = await s3.send(
-                    new DeleteObjectCommand(bucketParams)
-                );
-                console.log("Success. Object deleted.", data);
+                const bucketParams_m = {
+                    Bucket: "dino-image-library",
+                    Key: filename.replace(".", "_m."),
+                };
+                const bucketParams_s = {
+                    Bucket: "dino-image-library",
+                    Key: filename.replace(".", "_s."),
+                };
+                await s3.send(new DeleteObjectCommand(bucketParams));
+                await s3.send(new DeleteObjectCommand(bucketParams_m));
+                await s3.send(new DeleteObjectCommand(bucketParams_s));
+                console.log("Success. Object deleted.");
                 // return data; // For unit tests.
             } catch (err) {
                 console.log("Error", err);
