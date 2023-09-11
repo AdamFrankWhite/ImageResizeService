@@ -40,7 +40,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
     // new s3 command
     try {
-        await uploadSMLImagesToS3(params, req.file.originalname);
+        await uploadSMLImagesToS3(params, req.file);
 
         // update dynamodb
         console.log(req.body.user);
