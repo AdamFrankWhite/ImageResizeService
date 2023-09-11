@@ -5,7 +5,7 @@ import multer from "multer";
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import * as dotenv from "dotenv";
 import cors from "cors";
-import { uploadSMLImagesToS3 } from "../utils/uploadSMLImagesToS3";
+import { uploadSMLImagesToS3 } from "../utils/uploadSMLImagesToS3.js";
 import awsServerlessExpress from "aws-serverless-express";
 dotenv.config();
 // create s3 instance using S3Client
@@ -40,7 +40,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
     // new s3 command
     try {
-        uploadSMLImagesToS3(params, req.file);
+        await uploadSMLImagesToS3(params, req.file.originalname);
 
         // update dynamodb
         console.log(req.body.user);
