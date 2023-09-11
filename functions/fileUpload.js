@@ -2,11 +2,6 @@
 import express from "express";
 import multer from "multer";
 import Jimp from "jimp";
-import {
-    S3Client,
-    PutObjectCommand,
-    DeleteObjectCommand,
-} from "@aws-sdk/client-s3";
 
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import * as dotenv from "dotenv";
@@ -20,21 +15,18 @@ const dynamodbClient = new DynamoDBClient({
 });
 
 // export const handler = async (event) => {
-const s3 = new S3Client({
-    credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-    },
-    region: process.env.AWS_REGION,
-});
+
 const app = express();
 //use cors library to avoid CORS issues
 app.use(cors());
+// create express server
 const server = awsServerlessExpress.createServer(app);
 
 // create memory storage object, storing image in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+// express route
 app.post("/upload", upload.single("image"), async (req, res) => {
     // image params
     const params = {
@@ -43,46 +35,11 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         Body: req.file.buffer,
         ContentType: req.file.mimetype,
     };
+
     // new s3 command
-    const command = new PutObjectCommand(params);
     try {
-        // send original image
-        await s3.send(command);
+        uploadSMLImagesToS3(params, req.file);
 
-        // resize and save medium image to bucket
-        let imageToRead = `https://dino-image-library.s3.eu-west-2.amazonaws.com/${req.file.originalname}`;
-        let originalImage = await Jimp.read(imageToRead);
-        let resizedImage = await originalImage.resize(
-            parseInt(originalImage.bitmap.width / 2),
-            parseInt(originalImage.bitmap.height / 2)
-        );
-        const resizedBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
-        const params_med = {
-            Bucket: "dino-image-library",
-            Key: req.file.originalname.replace(".", "_m."),
-            Body: resizedBuffer,
-            ContentType: req.file.mimetype,
-        };
-        const command_m = new PutObjectCommand(params_med);
-        // save MEDIUM image to S3 bucket
-        await s3.send(command_m);
-
-        // SMALL resize
-        // read image
-        let resizedImageS = await originalImage.resize(
-            parseInt(originalImage.bitmap.width / 5),
-            parseInt(originalImage.bitmap.height / 5)
-        ); // resize
-
-        const resizedBufferS = await resizedImageS.getBufferAsync(Jimp.AUTO);
-        const params_s = {
-            Bucket: "dino-image-library",
-            Key: req.file.originalname.replace(".", "_s."),
-            Body: resizedBufferS,
-            ContentType: req.file.mimetype,
-        };
-        const command_s = new PutObjectCommand(params_s);
-        await s3.send(command_s);
         // update dynamodb
         console.log(req.body.user);
         const tableName = "ResizeServiceTable";
