@@ -5,6 +5,7 @@ import multer from "multer";
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import * as dotenv from "dotenv";
 import cors from "cors";
+import { uploadSMLImagesToS3 } from "../utils/uploadSMLImagesToS3";
 import awsServerlessExpress from "aws-serverless-express";
 dotenv.config();
 // create s3 instance using S3Client

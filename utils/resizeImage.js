@@ -1,6 +1,6 @@
 import Jimp from "jimp";
 
-export default resizeImage = async (image, divisor) => {
+export const resizeImage = async (image, divisor) => {
     let resizedImage = await image.resize(
         parseInt(originalImage.bitmap.width / divisor),
         parseInt(originalImage.bitmap.height / divisor)

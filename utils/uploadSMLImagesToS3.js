@@ -3,8 +3,8 @@ import {
     PutObjectCommand,
     DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
-import readImage from "../utils/readImage";
-import resizeImage from "../utils/resizeImage";
+import { readImage } from "../utils/readImage";
+import { resizeImage } from "../utils/resizeImage";
 const s3 = new S3Client({
     credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY_ID,
