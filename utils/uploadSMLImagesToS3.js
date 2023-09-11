@@ -14,6 +14,7 @@ const s3 = new S3Client({
 });
 
 export const uploadSMLImagesToS3 = async (params, file) => {
+    console.log("file: " + file);
     // upload original image
     const command = new PutObjectCommand(params);
     await s3.send(command);

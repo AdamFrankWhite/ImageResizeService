@@ -1,7 +1,6 @@
 "use strict";
 import express from "express";
 import multer from "multer";
-import Jimp from "jimp";
 
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import * as dotenv from "dotenv";
@@ -19,6 +18,8 @@ const dynamodbClient = new DynamoDBClient({
 const app = express();
 //use cors library to avoid CORS issues
 app.use(cors());
+// app.use(express.urlencoded());
+// app.use(express.json());
 // create express server
 const server = awsServerlessExpress.createServer(app);
 
