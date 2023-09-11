@@ -63,7 +63,7 @@ const typeDefs = `#graphql
 
       
       type Mutation {
-        deleteImage(id: String!, filename: String!): User
+        deleteImage(id: String!, filename: String!, token: String!): User
       }
 
       type Mutation {
@@ -113,7 +113,7 @@ const resolvers = {
             return dynamoDBClient
                 .send(command)
                 .then((data) => {
-                    console.log("Item retrieved:", data.Item);
+                    // console.log("Item retrieved:", data.Item);
 
                     // MAP ITEM TODO - extract out
                     let userObj = {
@@ -145,6 +145,7 @@ const resolvers = {
     Mutation: {
         async deleteImage(parent, args, contextValue, info) {
             let id = args.id;
+            let token = args.token;
             let filename = args.filename;
             const params = {
                 TableName: "ResizeServiceTable",
@@ -258,7 +259,7 @@ const resolvers = {
             let validPassword = await dynamoDBClient
                 .send(command)
                 .then((data) => {
-                    console.log("Item retrieved:", data.Item);
+                    // console.log("Item retrieved:", data.Item);
 
                     // MAP ITEM TODO - extract out
                     let storedPassword = data.Item.password.S;
@@ -296,6 +297,7 @@ const resolvers = {
 
                         const token = jwt.sign(user, secretKey, options);
                         user.token = token;
+                        console.log(user.token);
                     } else {
                         return "wrong password";
                     }
