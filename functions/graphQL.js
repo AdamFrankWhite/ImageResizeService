@@ -25,59 +25,48 @@ const dynamoDBClient = new DynamoDBClient({ region: "eu-west-2" });
 // that together define the "shape" of queries that are executed against
 // your data.
 const typeDefs = `#graphql
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-
-  # This "Book" type defines the queryable fields for every book in our data source.
-  
-
+  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol
   # The "Query" type is special: it lists all of the available queries that
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
   
     type Query {
         user(id: String!, token: String): User
-      }
-    
-      type User {
-          id: String
-          username: String
-          email: String
-          password: String
-          date_created: String
-          images: [Image]
-          fileResizeRequestCount: Int
-          token: String
-      }
-    
-      type Image {
-          imageID: String
-          imageUrl: String
-          filename: String
-          fileType: String
-          width: Int
-          height: Int
-          compressed: Boolean
-          compressedPercent: Int
-    
-      }
+    }
 
-      
-      type Mutation {
+    type User {
+        id: String
+        username: String
+        email: String
+        password: String
+        date_created: String
+        images: [Image]
+        fileResizeRequestCount: Int
+        token: String
+    }
+
+    type Image {
+        imageUrl: String
+        filename: String
+        fileType: String
+    }
+
+    
+    type Mutation {
         deleteImage(id: String!, filename: String!, token: String!): User
-      }
+    }
 
-      type Mutation {
+    type Mutation {
         createUser(username: String!, password: String!): User
-      }
-     
-      type Mutation {
-        login(username: String!, password: String!): User
-        
-      }
-
-      
+    }
     
-     
+    type Mutation {
+        login(username: String!, password: String!): User
+    }
+
+    
+
+    
 `;
 
 // RESOLVERS
@@ -147,12 +136,14 @@ const resolvers = {
             let id = args.id;
             let token = args.token;
             let filename = args.filename;
-            const params = {
-                TableName: "ResizeServiceTable",
-                Key: {
-                    USER: { S: id },
-                },
-            };
+            jwt.verify(token, secretKey, (error, decoded) => {
+                if (error) {
+                    console.log("Unauthorised");
+                    return error.message;
+                } else {
+                    loginVerified = true;
+                }
+            });
 
             //DELETE FROM S3 BUCKET
             try {
@@ -172,24 +163,24 @@ const resolvers = {
                 await s3.send(new DeleteObjectCommand(bucketParams_m));
                 await s3.send(new DeleteObjectCommand(bucketParams_s));
                 console.log("Success. Object deleted.");
-                // return data; // For unit tests.
             } catch (err) {
                 console.log("Error", err);
             }
+            const params = {
+                TableName: "ResizeServiceTable",
+                Key: {
+                    USER: { S: id },
+                },
+            };
 
             // DELETE FROM DYNAMODB
-            // create command
             const command = new GetItemCommand(params);
-
             // execute command/handle response
             let filteredArray = await dynamoDBClient
                 .send(command)
                 .then((data) => {
-                    // console.log("Item retrieved:", data.Item);
-
-                    // MAP ITEM TODO - extract out
+                    // MAP ITEM
                     let imagesArray = data.Item.images.L;
-
                     return imagesArray.filter(
                         (item) => item.M.filename.S != filename
                     );
@@ -202,7 +193,6 @@ const resolvers = {
                 TableName: "ResizeServiceTable",
                 Key: { USER: { S: id } },
                 UpdateExpression: "SET images = :updatedList",
-
                 ExpressionAttributeValues: {
                     ":updatedList": { L: filteredArray },
                 },
@@ -210,7 +200,6 @@ const resolvers = {
 
             try {
                 const result = await dynamoDBClient.send(updateCommand);
-
                 console.log("Item updated successfully:", result);
                 return filteredArray;
             } catch (error) {
@@ -267,21 +256,18 @@ const resolvers = {
             let validPassword = await dynamoDBClient
                 .send(command)
                 .then((data) => {
-                    // console.log("Item retrieved:", data.Item);
-
-                    // MAP ITEM TODO - extract out
+                    // MAP ITEM
                     let storedPassword = data.Item.password.S;
                     let salt = data.Item.salt.S;
                     // hash password
                     var hashedPassword = crypto
                         .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
                         .toString(`hex`);
+
+                    // Extract user object data
                     let userObj = {
                         username: data.Item.USER.S,
-                        // username: data.Item.username.S,
-                        // email: data.Item.email.S,
-                        // password: "bla",
-                        date_created: "meh",
+                        date_created: "date",
                         images: data.Item.images.L.map((item) => {
                             return {
                                 fileType: item.M.fileType.S,
@@ -302,7 +288,6 @@ const resolvers = {
                         const options = {
                             expiresIn: "3h", // Token expiration time
                         };
-
                         const token = jwt.sign(user, secretKey, options);
                         user.token = token;
                         console.log(user.token);
