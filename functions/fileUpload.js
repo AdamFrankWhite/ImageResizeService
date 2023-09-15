@@ -29,7 +29,19 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         Body: file.buffer,
         ContentType: file.mimetype,
     };
-
+    console.log(file.mimetype);
+    const acceptedTypes = [
+        "image/jpeg",
+        "image/bmp",
+        "image/tiff",
+        "image/png",
+        "image/gif",
+    ];
+    // validation
+    if (!acceptedTypes.includes(file.mimetype)) {
+        console.log("Error. File type not supported");
+        return res.json({ message: "Error. File type not supported" });
+    }
     // new s3 command
     try {
         let message;
