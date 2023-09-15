@@ -24,9 +24,15 @@ export const uploadSMLImagesToS3 = async (params, file) => {
         let image = await readImage(
             `https://dino-image-library.s3.eu-west-2.amazonaws.com/${file.originalname}`
         );
+        let imageWidth = image.bitmap.width;
+        let imageHeight = image.bitmap.height;
         console.log(image.bitmap.width, image.bitmap.height);
         // resize and save medium image to bucket
-        let resizedBufferMedium = await resizeImage(image, 2);
+        let resizedBufferMedium = await resizeImage(
+            image,
+            parseInt(imageWidth / 2),
+            parseInt(imageHeight / 2)
+        );
         const params_med = {
             Bucket: "dino-image-library",
             Key: file.originalname.replace(".", "_m."),
@@ -39,7 +45,11 @@ export const uploadSMLImagesToS3 = async (params, file) => {
 
         // SMALL resize
         // read image
-        let resizedBufferSmall = await resizeImage(image, 5);
+        let resizedBufferSmall = await resizeImage(
+            image,
+            parseInt(imageWidth / 5),
+            parseInt(imageHeight / 5)
+        );
 
         const params_s = {
             Bucket: "dino-image-library",
