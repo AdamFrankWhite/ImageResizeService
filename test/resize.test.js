@@ -14,25 +14,26 @@ const testImage = async (width, height) => {
     new Jimp(resizedImage, function (err, image) {
         var w = image.bitmap.width; //  width of the image
         var h = image.bitmap.height; // height of the image
-        expect(w).toBe(width) && expect(h).toBe(height);
+        expect(w).toBe(width);
+        expect(h).toBe(height);
     });
 };
 test("resized image has width 100, height 100", async () => {
-    testImage(100, 100);
+    await testImage(100, 100);
 });
 
 test("resized image has width 200, height 200", async () => {
-    testImage(200, 200);
+    await testImage(200, 200);
 });
 
 test("resized image has width 300, height 300", async () => {
-    testImage(300, 300);
+    await testImage(300, 300);
 });
 
 test("resized image has width 1000, height 1000", async () => {
-    testImage(1000, 1000);
+    await testImage(1000, 1000);
 });
 
 test("resized image has width 1, height 1", async () => {
-    testImage(1, 1);
+    await testImage(1, 1);
 });
