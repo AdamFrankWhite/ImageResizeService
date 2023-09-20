@@ -13,6 +13,11 @@ import {
     PutItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+
+// JWT key
+let secretKey = process.env.JWT_SECRET_KEY;
+
+// S3/DynamoDB clients
 const s3 = new S3Client({
     credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY_ID,
@@ -20,6 +25,7 @@ const s3 = new S3Client({
     },
     region: process.env.AWS_REGION,
 });
+
 const dynamoDBClient = new DynamoDBClient({ region: "eu-west-2" });
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -74,7 +80,6 @@ const resolvers = {
     Query: {
         async user(parent, args, contextValue, info) {
             let token = args.token;
-            let secretKey = process.env.JWT_SECRET_KEY;
             // verify token
             let loginVerified = false;
             jwt.verify(token, secretKey, (error, decoded) => {
@@ -284,7 +289,7 @@ const resolvers = {
                     if (hashedPassword == storedPassword) {
                         user = userObj;
                         // generate session key
-                        let secretKey = process.env.JWT_SECRET_KEY;
+
                         const options = {
                             expiresIn: "3h", // Token expiration time
                         };
