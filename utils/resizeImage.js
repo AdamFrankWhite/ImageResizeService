@@ -11,7 +11,7 @@ export const resizeImage = async (image, width, height) => {
     // return resized image
     let resizedImage = await image
         .resize(parseInt(resizeWidth), parseInt(resizeHeight))
-        .quality(70);
+        .quality(80);
     let imageBuffer = await resizedImage.getBufferAsync(Jimp.AUTO);
     return imageBuffer;
 };
