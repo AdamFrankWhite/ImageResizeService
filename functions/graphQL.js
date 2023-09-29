@@ -141,6 +141,7 @@ const resolvers = {
             let id = args.id;
             let token = args.token;
             let filename = args.filename;
+            let loginVerified = false;
             jwt.verify(token, secretKey, (error, decoded) => {
                 if (error) {
                     console.log("Unauthorised");
@@ -149,66 +150,69 @@ const resolvers = {
                     loginVerified = true;
                 }
             });
+            if (loginVerified) {
+                //DELETE FROM S3 BUCKET
+                try {
+                    const bucketParams = {
+                        Bucket: "dino-image-library",
+                        Key: filename,
+                    };
+                    const bucketParams_m = {
+                        Bucket: "dino-image-library",
+                        Key: filename.replace(".", "_m."),
+                    };
+                    const bucketParams_s = {
+                        Bucket: "dino-image-library",
+                        Key: filename.replace(".", "_s."),
+                    };
+                    await s3.send(new DeleteObjectCommand(bucketParams));
+                    await s3.send(new DeleteObjectCommand(bucketParams_m));
+                    await s3.send(new DeleteObjectCommand(bucketParams_s));
+                    console.log("Success. Object deleted.");
+                } catch (err) {
+                    console.log("Error", err);
+                }
+                const params = {
+                    TableName: "ResizeServiceTable",
+                    Key: {
+                        USER: { S: id },
+                    },
+                };
 
-            //DELETE FROM S3 BUCKET
-            try {
-                const bucketParams = {
-                    Bucket: "dino-image-library",
-                    Key: filename,
-                };
-                const bucketParams_m = {
-                    Bucket: "dino-image-library",
-                    Key: filename.replace(".", "_m."),
-                };
-                const bucketParams_s = {
-                    Bucket: "dino-image-library",
-                    Key: filename.replace(".", "_s."),
-                };
-                await s3.send(new DeleteObjectCommand(bucketParams));
-                await s3.send(new DeleteObjectCommand(bucketParams_m));
-                await s3.send(new DeleteObjectCommand(bucketParams_s));
-                console.log("Success. Object deleted.");
-            } catch (err) {
-                console.log("Error", err);
-            }
-            const params = {
-                TableName: "ResizeServiceTable",
-                Key: {
-                    USER: { S: id },
-                },
-            };
+                // DELETE FROM DYNAMODB
+                const command = new GetItemCommand(params);
+                // execute command/handle response
+                let filteredArray = await dynamoDBClient
+                    .send(command)
+                    .then((data) => {
+                        // MAP ITEM
+                        let imagesArray = data.Item.images.L;
+                        return imagesArray.filter(
+                            (item) => item.M.filename.S != filename
+                        );
+                    })
+                    .catch((error) => {
+                        console.error("Error retrieving item:", error);
+                    });
 
-            // DELETE FROM DYNAMODB
-            const command = new GetItemCommand(params);
-            // execute command/handle response
-            let filteredArray = await dynamoDBClient
-                .send(command)
-                .then((data) => {
-                    // MAP ITEM
-                    let imagesArray = data.Item.images.L;
-                    return imagesArray.filter(
-                        (item) => item.M.filename.S != filename
-                    );
-                })
-                .catch((error) => {
-                    console.error("Error retrieving item:", error);
+                const updateCommand = new UpdateItemCommand({
+                    TableName: "ResizeServiceTable",
+                    Key: { USER: { S: id } },
+                    UpdateExpression: "SET images = :updatedList",
+                    ExpressionAttributeValues: {
+                        ":updatedList": { L: filteredArray },
+                    },
                 });
 
-            const updateCommand = new UpdateItemCommand({
-                TableName: "ResizeServiceTable",
-                Key: { USER: { S: id } },
-                UpdateExpression: "SET images = :updatedList",
-                ExpressionAttributeValues: {
-                    ":updatedList": { L: filteredArray },
-                },
-            });
-
-            try {
-                const result = await dynamoDBClient.send(updateCommand);
-                console.log("Item updated successfully:", result);
-                return filteredArray;
-            } catch (error) {
-                console.error("Error updating item:", error);
+                try {
+                    const result = await dynamoDBClient.send(updateCommand);
+                    console.log("Item updated successfully:", result);
+                    return filteredArray;
+                } catch (error) {
+                    console.error("Error updating item:", error);
+                }
+            } else {
+                return null;
             }
         },
         async createUser(parent, args, contextValue, info) {
