@@ -29,6 +29,7 @@ export const updateUserImageArray = async (user, file) => {
         ExpressionAttributeNames: {
             "#images": "images",
         },
+        // ConditionExpression: "NOT contains(#images, :newImage)",
         ExpressionAttributeValues: {
             ":newImage": { L: [{ M: newImageItem }] },
         },
