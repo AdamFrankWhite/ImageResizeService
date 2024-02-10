@@ -34,6 +34,11 @@ provider:
     deploymentMethod: direct
     runtime: nodejs18.x
     region: eu-west-2
+    apiGateway:
+        binaryMediaTypes:
+        - 'image/png'
+        - 'image/jpeg'
+        - 'multipart/form-data'
 
 plugins:
     - serverless-offline
