@@ -6,6 +6,7 @@ import cors from "cors";
 import { uploadSMLImagesToS3 } from "../utils/uploadSMLImagesToS3.js";
 import { updateUserImageArray } from "../utils/updateUserImageArray.js";
 import awsServerlessExpress from "aws-serverless-express";
+import { randomUUID } from "crypto";
 dotenv.config();
 
 const app = express();
@@ -21,15 +22,20 @@ const upload = multer({ storage });
 // express route
 app.post("/upload", upload.single("image"), async (req, res) => {
     const user = req.body.user;
+    const query_params = req.body.q;
     const file = req.file;
+    // get file extension
+    let ext = req.file.originalname.split(".").pop();
+    // generate random file name
+    let filename = randomUUID() + "." + ext;
     // image params
     const params = {
         Bucket: "dino-image-library",
-        Key: file.originalname,
+        Key: filename,
         Body: file.buffer,
         ContentType: file.mimetype,
     };
-    console.log(file.mimetype);
+    console.log(params);
     const acceptedTypes = [
         "image/jpeg",
         "image/bmp",
@@ -45,8 +51,14 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     // new s3 command
     try {
         let message;
-        message = await uploadSMLImagesToS3(params, file);
-        message = await updateUserImageArray(user, file);
+        message = await uploadSMLImagesToS3(
+            params,
+            file,
+            filename,
+            query_params
+        );
+        // separate concerns - microservices architecture
+        //message = await updateUserImageArray(user, file, filename);
         let statusCode = message.result == "success" ? 200 : 500;
 
         res.json({
@@ -54,9 +66,9 @@ app.post("/upload", upload.single("image"), async (req, res) => {
             body: {
                 message,
                 imageData: {
-                    imageUrl: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${file.originalname}`,
+                    imageUrl: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`,
 
-                    filename: file.originalname,
+                    filename: filename,
                     fileType: file.mimetype,
                 },
             },
