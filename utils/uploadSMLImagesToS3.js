@@ -16,13 +16,18 @@ const s3 = new S3Client({
     region: process.env.AWS_REGION,
 });
 
-export const uploadSMLImagesToS3 = async (params, file) => {
+export const uploadSMLImagesToS3 = async (
+    params,
+    file,
+    filename,
+    query_params
+) => {
     try {
         // upload original image
         const command = new PutObjectCommand(params);
         await s3.send(command);
         let image = await readImage(
-            `https://dino-image-library.s3.eu-west-2.amazonaws.com/${file.originalname}`
+            `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`
         );
         let imageWidth = image.bitmap.width;
         let imageHeight = image.bitmap.height;
@@ -35,10 +40,11 @@ export const uploadSMLImagesToS3 = async (params, file) => {
         );
         const params_med = {
             Bucket: "dino-image-library",
-            Key: file.originalname.replace(".", "_m."),
+            Key: filename.replace(".", "_m."),
             Body: resizedBufferMedium,
             ContentType: file.mimetype,
         };
+        console.log(params_med);
         const command_m = new PutObjectCommand(params_med);
         // save MEDIUM image to S3 bucket
         await s3.send(command_m);
@@ -53,7 +59,7 @@ export const uploadSMLImagesToS3 = async (params, file) => {
 
         const params_s = {
             Bucket: "dino-image-library",
-            Key: file.originalname.replace(".", "_s."),
+            Key: filename.replace(".", "_s."),
             Body: resizedBufferSmall,
             ContentType: file.mimetype,
         };
@@ -61,6 +67,6 @@ export const uploadSMLImagesToS3 = async (params, file) => {
         await s3.send(command_s);
         return { result: "success", message: "Image successfully uploaded" };
     } catch (error) {
-        return { result: "failure", message: "Failed to upload image" };
+        return { result: "failure", error };
     }
 };

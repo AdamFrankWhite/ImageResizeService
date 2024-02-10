@@ -1,7 +1,7 @@
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import * as dotenv from "dotenv";
 dotenv.config();
-export const updateUserImageArray = async (user, file) => {
+export const updateUserImageArray = async (user, file, uuid) => {
     // Create a DynamoDB client instance
     const dynamodbClient = new DynamoDBClient({
         region: process.env.AWS_REGION,
@@ -14,9 +14,9 @@ export const updateUserImageArray = async (user, file) => {
 
     const newImageItem = {
         imageUrl: {
-            S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${file.originalname}`,
+            S: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${uuid}`,
         },
-        filename: { S: file.originalname },
+        filename: { S: uuid },
         fileType: { S: file.mimetype },
     };
     // update command
