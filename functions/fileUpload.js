@@ -7,7 +7,7 @@ import { uploadSMLImagesToS3 } from "../utils/uploadSMLImagesToS3.js";
 import { updateUserImageArray } from "../utils/updateUserImageArray.js";
 import awsServerlessExpress from "aws-serverless-express";
 import { randomUUID } from "crypto";
-import { fileTypeFromFile } from "file-type";
+import { fileTypeFromBlob } from "file-type";
 dotenv.config();
 
 const app = express();
@@ -41,7 +41,21 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     ];
     // validation
 
-    let validationData = await fileTypeFromFile(file);
+    console.log(req.file.size);
+    let fileSize = req.file.size;
+    if (fileSize > 5242880) {
+        return res.json({ message: "Error. File must be under 5mb" });
+    }
+    // validate filename
+    // TODO - sanitise input and validate
+
+    // check filename length
+    if (req.file.originalname.length > 30) {
+        return res.json({ message: "Error. Filename" });
+    }
+
+    // file type validation
+    let validationData = await fileTypeFromBlob(file);
     console.log(validationData);
     if (!acceptedTypes.includes(validationData.mime)) {
         console.log("Error. File type not supported");
@@ -49,15 +63,15 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     }
     // change blob files to correct ext
     const fileExtensionMap = {
-        "image/jpeg": ".jpg",
-        "image/bmp": ".bmp",
-        "image/tiff": ".tiff",
-        "image/png": ".png",
-        "image/gif": ".gif",
+        "image/jpeg": "jpg",
+        "image/bmp": "bmp",
+        "image/tiff": "tiff",
+        "image/png": "png",
+        "image/gif": "gif",
     };
 
     // add correct ext from blob
-    if (ext === ".blob") {
+    if (ext === "blob") {
         ext = fileExtensionMap[file.mimetype];
     }
     // generate random file name
