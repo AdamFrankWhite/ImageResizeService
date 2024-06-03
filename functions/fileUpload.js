@@ -7,6 +7,7 @@ import { uploadSMLImagesToS3 } from "../utils/uploadSMLImagesToS3.js";
 import { updateUserImageArray } from "../utils/updateUserImageArray.js";
 import awsServerlessExpress from "aws-serverless-express";
 import { randomUUID } from "crypto";
+import { fileTypeFromFile } from "file-type";
 dotenv.config();
 
 const app = express();
@@ -24,8 +25,41 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     const user = req.body.user;
     const query_params = req.body.q;
     const file = req.file;
+    console.log(req.body);
+    console.log("File:");
+    console.log(req.file);
     // get file extension
     let ext = req.file.originalname.split(".").pop();
+    console.log(ext);
+
+    const acceptedTypes = [
+        "image/jpeg",
+        "image/bmp",
+        "image/tiff",
+        "image/png",
+        "image/gif",
+    ];
+    // validation
+
+    let validationData = await fileTypeFromFile(file);
+    console.log(validationData);
+    if (!acceptedTypes.includes(validationData.mime)) {
+        console.log("Error. File type not supported");
+        return res.json({ message: "Error. File type not supported" });
+    }
+    // change blob files to correct ext
+    const fileExtensionMap = {
+        "image/jpeg": ".jpg",
+        "image/bmp": ".bmp",
+        "image/tiff": ".tiff",
+        "image/png": ".png",
+        "image/gif": ".gif",
+    };
+
+    // add correct ext from blob
+    if (ext === ".blob") {
+        ext = fileExtensionMap[file.mimetype];
+    }
     // generate random file name
     let filename = randomUUID() + "." + ext;
     // image params
@@ -35,19 +69,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         Body: file.buffer,
         ContentType: file.mimetype,
     };
-    console.log(params);
-    const acceptedTypes = [
-        "image/jpeg",
-        "image/bmp",
-        "image/tiff",
-        "image/png",
-        "image/gif",
-    ];
-    // validation
-    if (!acceptedTypes.includes(file.mimetype)) {
-        console.log("Error. File type not supported");
-        return res.json({ message: "Error. File type not supported" });
-    }
+
     // new s3 command
     try {
         let message;
