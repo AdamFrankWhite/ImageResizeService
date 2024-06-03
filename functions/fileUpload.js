@@ -7,7 +7,7 @@ import { uploadSMLImagesToS3 } from "../utils/uploadSMLImagesToS3.js";
 import { updateUserImageArray } from "../utils/updateUserImageArray.js";
 import awsServerlessExpress from "aws-serverless-express";
 import { randomUUID } from "crypto";
-import { fileTypeFromBlob } from "file-type";
+import { fileTypeFromBuffer } from "file-type";
 dotenv.config();
 
 const app = express();
@@ -30,7 +30,6 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     console.log(req.file);
     // get file extension
     let ext = req.file.originalname.split(".").pop();
-    console.log(ext);
 
     const acceptedTypes = [
         "image/jpeg",
@@ -40,8 +39,6 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         "image/gif",
     ];
     // validation
-
-    console.log(req.file.size);
     let fileSize = req.file.size;
     if (fileSize > 5242880) {
         return res.json({ message: "Error. File must be under 5mb" });
@@ -53,9 +50,9 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     if (req.file.originalname.length > 30) {
         return res.json({ message: "Error. Filename" });
     }
-
+    console.log(file);
     // file type validation
-    let validationData = await fileTypeFromBlob(file);
+    let validationData = await fileTypeFromBuffer(file.buffer);
     console.log(validationData);
     if (!acceptedTypes.includes(validationData.mime)) {
         console.log("Error. File type not supported");
