@@ -40,8 +40,8 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     ];
     // validation
     let fileSize = req.file.size;
-    if (fileSize > 5242880) {
-        return res.json({ message: "Error. File must be under 5mb" });
+    if (fileSize > 10485760) {
+        return res.json({ message: "Error. File must be under 10mb" });
     }
     // validate filename
     // TODO - sanitise input and validate
