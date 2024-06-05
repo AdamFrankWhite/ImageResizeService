@@ -69,7 +69,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
     // add correct ext from blob
     if (ext === "blob") {
-        ext = fileExtensionMap[file.mimetype];
+        ext = fileExtensionMap[validationData.mime];
     }
     // generate random file name
     let filename = randomUUID() + "." + ext;
@@ -78,7 +78,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         Bucket: "dino-image-library",
         Key: filename,
         Body: file.buffer,
-        ContentType: file.mimetype,
+        ContentType: validationData.mime,
     };
 
     // new s3 command
@@ -102,7 +102,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
                     imageUrl: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`,
 
                     filename: filename,
-                    fileType: file.mimetype,
+                    fileType: validationData.mime,
                 },
             },
             // input: event,
