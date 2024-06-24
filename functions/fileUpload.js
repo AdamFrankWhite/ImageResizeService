@@ -93,13 +93,13 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         // separate concerns - microservices architecture
         //message = await updateUserImageArray(user, file, filename);
         let statusCode = message.result == "success" ? 200 : 500;
-
+        console.log("FILENAME: " + filename);
         res.json({
             statusCode,
             body: {
                 message,
                 imageData: {
-                    imageUrl: `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`,
+                    imageUrl: `https://d22cjjn8mu3b6d.cloudfront.net/${filename}`,
 
                     filename: filename,
                     fileType: validationData.mime,

@@ -27,7 +27,7 @@ export const uploadSMLImagesToS3 = async (
         const command = new PutObjectCommand(params);
         await s3.send(command);
         let image = await readImage(
-            `https://dino-image-library.s3.eu-west-2.amazonaws.com/${filename}`
+            `https://d22cjjn8mu3b6d.cloudfront.net/${filename}`
         );
         let imageWidth = image.bitmap.width;
         let imageHeight = image.bitmap.height;
